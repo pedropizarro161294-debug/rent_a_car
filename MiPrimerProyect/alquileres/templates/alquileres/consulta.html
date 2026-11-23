@@ -1,0 +1,50 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Consulta de alquileres{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Alquileres / Consulta</p>
+		<h1>Alquileres</h1>
+		<p class="muted">Filtrá por fecha del contrato, estado, cliente o vehículo y abrí cada registro para ver su detalle.</p>
+	</div>
+	{% if "alquileres.registrar" in permisos %}<a class="button" href="{% url 'alquileres:registrar' %}"><span aria-hidden="true">＋</span> Nuevo alquiler</a>{% endif %}
+</section>
+<form class="toolbar" method="get" novalidate>
+	<div class="field narrow">{{ form.fecha_desde.label_tag }}{{ form.fecha_desde }}{{ form.fecha_desde.errors }}</div>
+	<div class="field narrow">{{ form.fecha_hasta.label_tag }}{{ form.fecha_hasta }}{{ form.fecha_hasta.errors }}</div>
+	<div class="field narrow">{{ form.estado.label_tag }}{{ form.estado }}</div>
+	<div class="field">{{ form.cliente.label_tag }}{{ form.cliente }}</div>
+	<div class="field">{{ form.vehiculo.label_tag }}{{ form.vehiculo }}</div>
+	<button class="button" type="submit">Filtrar</button>
+	{% if filtrado %}<a class="button secondary" href="{% url 'alquileres:consulta' %}">Limpiar</a>{% endif %}
+</form>
+{% if contratos %}
+<section class="table-wrap">
+	<div class="table-count">{{ contratos|length }} alquiler{{ contratos|length|pluralize:"es" }} · Total no anulado: ${{ total_facturado|floatformat:"2g" }}</div>
+	<table>
+		<thead><tr><th>N.º</th><th>Fecha</th><th>Cliente</th><th>Período</th><th class="num">Días</th><th class="num">Vehículos</th><th class="num">Total</th><th>Registró</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+		<tbody>
+		{% for c in contratos %}
+		<tr>
+			<td><span class="person">{{ c.numero_contrato }}</span></td>
+			<td>{{ c.fecha_contrato|date:"d/m/Y H:i" }}</td>
+			<td>{{ c.id_cliente.apellido }}, {{ c.id_cliente.nombre }}</td>
+			<td>{{ c.fecha_inicio|date:"d/m/Y" }} al {{ c.fecha_fin|date:"d/m/Y" }}</td>
+			<td class="num">{{ c.cantidad_dias }}</td>
+			<td class="num">{{ c.total_vehiculos }}</td>
+			<td class="num">${{ c.monto_total|floatformat:"2g" }}</td>
+			<td>{{ c.id_empleado.nombre_usuario }}</td>
+			<td><span class="badge {% if c.estado == 'ANULADO' %}anulado{% elif c.estado == 'FINALIZADO' %}finalizado{% endif %}">{{ c.get_estado_display }}</span></td>
+			<td><div class="actions">
+				<a class="button secondary" href="{% url 'alquileres:detalle' c.pk %}">Ver detalle</a>
+				{% if "alquileres.comprobante" in permisos %}<a class="button secondary" href="{% url 'alquileres:comprobante' c.pk %}" target="_blank">Comprobante</a>{% endif %}
+			</div></td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state"><p class="eyebrow">Sin resultados</p><h2>No hay alquileres para mostrar</h2><p>{% if filtrado %}Probá con otros filtros.{% else %}Todavía no se registró ningún alquiler.{% endif %}</p></section>
+{% endif %}
+{% endblock %}

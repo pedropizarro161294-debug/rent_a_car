@@ -1,0 +1,86 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Nuevo alquiler{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Alquileres / Registrar</p>
+		<h1>Nuevo alquiler</h1>
+		<p class="muted">El número de contrato, la fecha, el usuario ({{ usuario_logueado.nombre_usuario }}) y el estado se completan solos al confirmar.</p>
+	</div>
+</section>
+<form method="post" novalidate>
+	{% csrf_token %}
+	<div class="proceso-grid">
+		<section class="form-panel wide">
+			{% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+			<div class="form-grid">
+				<div class="campo full">{{ form.id_cliente.label_tag }}{{ form.id_cliente }}<span class="helptext">¿No está en la lista? <a href="{% url 'alquileres:cliente_alta' %}?next={% url 'alquileres:registrar' %}">Registrar cliente</a></span>{{ form.id_cliente.errors }}</div>
+				<div class="campo">{{ form.fecha_inicio.label_tag }}{{ form.fecha_inicio }}{{ form.fecha_inicio.errors }}</div>
+				<div class="campo">{{ form.fecha_fin.label_tag }}{{ form.fecha_fin }}{{ form.fecha_fin.errors }}</div>
+				<div class="campo">{{ form.porcentaje_descuento.label_tag }}{{ form.porcentaje_descuento }}<span class="helptext">{{ form.porcentaje_descuento.help_text }}</span>{{ form.porcentaje_descuento.errors }}</div>
+				<div class="campo full">{{ form.condiciones.label_tag }}{{ form.condiciones }}</div>
+			</div>
+			<h2 class="section-title">Vehículos disponibles</h2>
+			{{ form.vehiculos.errors }}
+			{% if vehiculos_disponibles %}
+			<ul class="vehiculos-lista">
+				{% for cb in form.vehiculos %}
+				<li><label>{{ cb.tag }}<span>{{ cb.choice_label }}</span><span class="tarifa" data-vehiculo="{{ cb.data.value }}"></span></label></li>
+				{% endfor %}
+			</ul>
+			{% else %}
+			<p class="notice">No hay vehículos disponibles en este momento.</p>
+			{% endif %}
+		</section>
+		<aside class="totales" aria-live="polite">
+			<h2>Resumen</h2>
+			<dl>
+				<dt>Días</dt><dd id="r-dias">-</dd>
+				<dt>Vehículos</dt><dd id="r-cant">0</dd>
+				<dt>Subtotal</dt><dd id="r-subtotal">$0,00</dd>
+				<dt>Descuento</dt><dd id="r-desc">-$0,00</dd>
+				<dt>IVA {{ tasa_iva }}%</dt><dd id="r-iva">$0,00</dd>
+				<dt class="total">Total</dt><dd class="total" id="r-total">$0,00</dd>
+			</dl>
+			<p class="helptext">Cálculo estimado. El importe final lo calcula el sistema al confirmar.</p>
+			<div class="form-actions"><a class="button secondary" href="{% url 'alquileres:consulta' %}">Cancelar</a><button class="button" type="submit">Confirmar alquiler</button></div>
+		</aside>
+	</div>
+</form>
+{{ tarifas|json_script:"tarifas" }}
+<script>
+(function () {
+	const tarifas = JSON.parse(document.getElementById("tarifas").textContent);
+	const iva = {{ tasa_iva }};
+	const fmt = (n) => "$" + n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	document.querySelectorAll(".tarifa").forEach((el) => {
+		const t = tarifas[el.dataset.vehiculo];
+		if (t) el.textContent = fmt(Number(t)) + " / día";
+	});
+	const ini = document.getElementById("id_fecha_inicio");
+	const fin = document.getElementById("id_fecha_fin");
+	const desc = document.getElementById("id_porcentaje_descuento");
+	function calcular() {
+		let dias = 0;
+		if (ini.value && fin.value) {
+			const d = (new Date(fin.value) - new Date(ini.value)) / 86400000;
+			dias = d < 0 ? 0 : Math.max(d, 1);
+		}
+		const elegidos = [...document.querySelectorAll('input[name="vehiculos"]:checked')];
+		const subtotal = elegidos.reduce((s, cb) => s + Number(tarifas[cb.value] || 0) * dias, 0);
+		const pd = Math.min(Math.max(Number(desc.value) || 0, 0), 100);
+		const descuento = subtotal * pd / 100;
+		const impIva = (subtotal - descuento) * iva / 100;
+		document.getElementById("r-dias").textContent = dias || "-";
+		document.getElementById("r-cant").textContent = elegidos.length;
+		document.getElementById("r-subtotal").textContent = fmt(subtotal);
+		document.getElementById("r-desc").textContent = "-" + fmt(descuento);
+		document.getElementById("r-iva").textContent = fmt(impIva);
+		document.getElementById("r-total").textContent = fmt(subtotal - descuento + impIva);
+	}
+	document.querySelector("form").addEventListener("input", calcular);
+	document.querySelector("form").addEventListener("change", calcular);
+	calcular();
+})();
+</script>
+{% endblock %}

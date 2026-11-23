@@ -1,0 +1,61 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Alquiler {{ contrato.numero_contrato }}{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Alquileres / Detalle</p>
+		<h1>Alquiler {{ contrato.numero_contrato }} <span class="badge {% if contrato.estado == 'ANULADO' %}anulado{% elif contrato.estado == 'FINALIZADO' %}finalizado{% endif %}">{{ contrato.get_estado_display }}</span></h1>
+		<p class="muted">Registrado el {{ contrato.fecha_contrato|date:"d/m/Y H:i" }} por {{ contrato.id_empleado.apellido }}, {{ contrato.id_empleado.nombre }} ({{ contrato.id_empleado.nombre_usuario }}).</p>
+	</div>
+	<div class="actions">
+		<a class="button secondary" href="{% url 'alquileres:consulta' %}">Volver</a>
+		{% if "alquileres.comprobante" in permisos %}<a class="button secondary" href="{% url 'alquileres:comprobante' contrato.pk %}" target="_blank">Comprobante / PDF</a>{% endif %}
+		{% if contrato.estado == "CONFIRMADO" %}
+			{% if "alquileres.finalizar" in permisos %}
+			<form method="post" action="{% url 'alquileres:finalizar' contrato.pk %}">{% csrf_token %}<button class="button" type="submit">Finalizar (devolución)</button></form>
+			{% endif %}
+			{% if "alquileres.anular" in permisos %}<a class="button danger" href="{% url 'alquileres:anular' contrato.pk %}">Anular</a>{% endif %}
+		{% endif %}
+	</div>
+</section>
+
+<section class="form-panel wide">
+	<div class="ficha">
+		<div><span>Cliente</span><strong>{{ contrato.id_cliente.apellido }}, {{ contrato.id_cliente.nombre }}</strong>DNI {{ contrato.id_cliente.dni }}</div>
+		<div><span>Retiro</span><strong>{{ contrato.fecha_inicio|date:"d/m/Y" }}</strong></div>
+		<div><span>Devolución</span><strong>{{ contrato.fecha_fin|date:"d/m/Y" }}</strong></div>
+		<div><span>Días</span><strong>{{ contrato.cantidad_dias }}</strong></div>
+	</div>
+	{% if contrato.condiciones %}<p class="section-title"><b>Observaciones:</b> {{ contrato.condiciones }}</p>{% endif %}
+	{% if contrato.fecha_finalizacion %}<p class="section-title"><b>Finalizado:</b> {{ contrato.fecha_finalizacion|date:"d/m/Y H:i" }}</p>{% endif %}
+	{% if contrato.estado == "ANULADO" %}
+	<div class="anulacion">
+		<b>Anulado</b> el {{ contrato.fecha_anulacion|date:"d/m/Y H:i" }} por {{ contrato.id_empleado_anulacion.nombre_usuario }}.<br>
+		Motivo: {{ contrato.motivo_anulacion }}
+	</div>
+	{% endif %}
+</section>
+
+<h2 class="section-title">Vehículos alquilados</h2>
+<section class="table-wrap">
+	<table>
+		<thead><tr><th>Patente</th><th>Vehículo</th><th>Categoría</th><th class="num">Tarifa diaria</th><th class="num">Días</th><th class="num">Subtotal</th></tr></thead>
+		<tbody>
+		{% for d in detalles %}
+		<tr>
+			<td><span class="person">{{ d.id_vehiculo.patente }}</span></td>
+			<td>{{ d.id_vehiculo.marca }} {{ d.id_vehiculo.modelo }}</td>
+			<td>{{ d.id_vehiculo.id_categoria.nombre_categoria }}</td>
+			<td class="num">${{ d.tarifa_diaria|floatformat:"2g" }}</td>
+			<td class="num">{{ d.cantidad_dias }}</td>
+			<td class="num">${{ d.subtotal|floatformat:"2g" }}</td>
+		</tr>
+		{% endfor %}
+		<tr><td colspan="5" class="num">Subtotal</td><td class="num">${{ contrato.subtotal|floatformat:"2g" }}</td></tr>
+		<tr><td colspan="5" class="num">Descuento ({{ contrato.porcentaje_descuento|floatformat:"-2" }}%)</td><td class="num">-${{ contrato.importe_descuento|floatformat:"2g" }}</td></tr>
+		<tr><td colspan="5" class="num">IVA</td><td class="num">${{ contrato.importe_iva|floatformat:"2g" }}</td></tr>
+		<tr><td colspan="5" class="num"><b>Total</b></td><td class="num"><b>${{ contrato.monto_total|floatformat:"2g" }}</b></td></tr>
+		</tbody>
+	</table>
+</section>
+{% endblock %}

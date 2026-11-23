@@ -1,0 +1,45 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Categorías{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Flota / Categorías</p>
+		<h1>Categorías de vehículo</h1>
+		<p class="muted">La tarifa diaria de la categoría es la que se cobra en cada alquiler.</p>
+	</div>
+	<a class="button" href="{% url 'alquileres:categoria_alta' %}"><span aria-hidden="true">＋</span> Nueva categoría</a>
+</section>
+<form class="toolbar" method="get">
+	{% include "abm/_filtro_estado.html" %}
+	<button class="button" type="submit">Filtrar</button>
+</form>
+{% if categorias %}
+<section class="table-wrap">
+	<div class="table-count">{{ categorias|length }} resultado{{ categorias|length|pluralize:"s" }}</div>
+	<table>
+		<thead><tr><th>Categoría</th><th>Tamaño</th><th class="num">Tarifa diaria</th><th class="num">Precio ref.</th><th>Equipamiento</th><th class="num">Vehículos</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+		<tbody>
+		{% for c in categorias %}
+		<tr>
+			<td><span class="person">{{ c.nombre_categoria }}</span></td>
+			<td>{{ c.tamanio }}</td>
+			<td class="num">${{ c.tarifa }}</td>
+			<td class="num">${{ c.precio }}</td>
+			<td>{{ c.equipamiento|default:"-" }}</td>
+			<td class="num">{{ c.total_vehiculos }}</td>
+			<td><span class="badge {% if c.estado == 'INACTIVO' %}inactive{% endif %}">{{ c.get_estado_display }}</span></td>
+			<td><div class="actions">
+				<a class="button secondary" href="{% url 'alquileres:categoria_editar' c.pk %}">Editar</a>
+				<form method="post" action="{% url 'alquileres:categoria_estado' c.pk %}">{% csrf_token %}
+					<button class="button {% if c.estado == 'ACTIVO' %}danger{% else %}secondary{% endif %}" type="submit">{% if c.estado == 'ACTIVO' %}Dar de baja{% else %}Reactivar{% endif %}</button>
+				</form>
+			</div></td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state"><p class="eyebrow">Sin resultados</p><h2>No hay categorías para mostrar</h2><p>Registrá la primera categoría para poder cargar vehículos.</p></section>
+{% endif %}
+{% endblock %}

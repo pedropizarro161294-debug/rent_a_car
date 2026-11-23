@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'miprimerapp.apps.MiprimerappConfig',
     'usuarios',
+    'alquileres',
 ]
 
 MIDDLEWARE = [

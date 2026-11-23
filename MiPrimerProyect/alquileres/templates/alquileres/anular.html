@@ -1,0 +1,19 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Anular alquiler{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Alquileres / Anulación</p>
+		<h1>Anular alquiler {{ contrato.numero_contrato }}</h1>
+		<p class="muted">{{ contrato.id_cliente.apellido }}, {{ contrato.id_cliente.nombre }} · Total ${{ contrato.monto_total|floatformat:"2g" }}</p>
+	</div>
+</section>
+<section class="form-panel">
+	<p class="notice">El alquiler no se borra: queda en estado Anulado con la fecha, el motivo y tu usuario, y los vehículos vuelven a estar disponibles.</p>
+	<form method="post" novalidate>
+		{% csrf_token %}
+		<div class="form-grid"><div class="campo full">{{ form.motivo.label_tag }}{{ form.motivo }}{{ form.motivo.errors }}</div></div>
+		<div class="form-actions"><a class="button secondary" href="{% url 'alquileres:detalle' contrato.pk %}">Volver</a><button class="button danger" type="submit">Confirmar anulación</button></div>
+	</form>
+</section>
+{% endblock %}
