@@ -1,0 +1,55 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Vehículos{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Flota / Vehículos</p>
+		<h1>Vehículos</h1>
+		<p class="muted">El estado "Alquilado" lo pone y lo quita el proceso de alquiler.</p>
+	</div>
+	<a class="button" href="{% url 'alquileres:vehiculo_alta' %}"><span aria-hidden="true">＋</span> Nuevo vehículo</a>
+</section>
+<form class="toolbar" method="get">
+	<div class="field">
+		<label for="q">Buscar vehículo</label>
+		<input id="q" type="search" name="q" value="{{ q }}" placeholder="Patente, marca o modelo">
+	</div>
+	<div class="field narrow">
+		<label for="operativo">Disponibilidad</label>
+		<select id="operativo" name="operativo">
+			<option value="">Todas</option>
+			{% for valor, texto in estados_operativos %}<option value="{{ valor }}" {% if operativo == valor %}selected{% endif %}>{{ texto }}</option>{% endfor %}
+		</select>
+	</div>
+	{% include "abm/_filtro_estado.html" %}
+	<button class="button" type="submit">Filtrar</button>
+</form>
+{% if vehiculos %}
+<section class="table-wrap">
+	<div class="table-count">{{ vehiculos|length }} resultado{{ vehiculos|length|pluralize:"s" }}</div>
+	<table>
+		<thead><tr><th>Patente</th><th>Vehículo</th><th>Categoría</th><th class="num">Tarifa diaria</th><th>Disponibilidad</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+		<tbody>
+		{% for v in vehiculos %}
+		<tr>
+			<td><span class="person">{{ v.patente }}</span></td>
+			<td>{{ v.marca }} {{ v.modelo }}</td>
+			<td>{{ v.id_categoria.nombre_categoria }}</td>
+			<td class="num">${{ v.id_categoria.tarifa }}</td>
+			<td><span class="badge {% if v.estado_operativo == 'ALQUILADO' %}alquilado{% elif v.estado_operativo != 'DISPONIBLE' %}inactive{% endif %}">{{ v.get_estado_operativo_display }}</span></td>
+			<td><span class="badge {% if v.estado == 'INACTIVO' %}inactive{% endif %}">{{ v.get_estado_display }}</span></td>
+			<td><div class="actions">
+				<a class="button secondary" href="{% url 'alquileres:vehiculo_editar' v.pk %}">Editar</a>
+				<form method="post" action="{% url 'alquileres:vehiculo_estado' v.pk %}">{% csrf_token %}
+					<button class="button {% if v.estado == 'ACTIVO' %}danger{% else %}secondary{% endif %}" type="submit">{% if v.estado == 'ACTIVO' %}Dar de baja{% else %}Reactivar{% endif %}</button>
+				</form>
+			</div></td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state"><p class="eyebrow">Sin resultados</p><h2>No hay vehículos para mostrar</h2><p>Cambiá el filtro o registrá un vehículo nuevo.</p></section>
+{% endif %}
+{% endblock %}

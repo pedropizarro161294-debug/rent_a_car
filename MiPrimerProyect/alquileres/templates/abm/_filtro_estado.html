@@ -1,0 +1,8 @@
+<div class="field narrow">
+	<label for="estado">Estado</label>
+	<select id="estado" name="estado">
+		<option value="ACTIVO" {% if estado == "ACTIVO" %}selected{% endif %}>Activos</option>
+		<option value="INACTIVO" {% if estado == "INACTIVO" %}selected{% endif %}>Inactivos</option>
+		<option value="todos" {% if estado == "todos" %}selected{% endif %}>Todos</option>
+	</select>
+</div>

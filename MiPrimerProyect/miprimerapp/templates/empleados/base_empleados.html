@@ -16,6 +16,11 @@
                 {% if "empleados.ver" in permisos %}<a href="{% url 'empleados:panel' %}" {% if request.resolver_match.url_name == 'panel' or request.resolver_match.url_name == 'listado' %}aria-current="page"{% endif %}>Empleados</a>{% endif %}
                 {% if "empleados.gestionar" in permisos %}<a href="{% url 'empleados:alta' %}" {% if request.resolver_match.url_name == 'alta' %}aria-current="page"{% endif %}>Alta</a>
                 <a href="{% url 'empleados:bajas' %}" {% if request.resolver_match.url_name == 'bajas' %}aria-current="page"{% endif %}>Bajas</a>{% endif %}
+                {% if "alquileres.consultar" in permisos %}<a href="{% url 'alquileres:consulta' %}" {% if request.resolver_match.app_name == 'alquileres' and request.resolver_match.url_name in 'consulta detalle anular' %}aria-current="page"{% endif %}>Alquileres</a>{% endif %}
+                {% if "alquileres.registrar" in permisos %}<a href="{% url 'alquileres:registrar' %}" {% if request.resolver_match.url_name == 'registrar' %}aria-current="page"{% endif %}>Nuevo alquiler</a>{% endif %}
+                {% if "clientes.gestionar" in permisos %}<a href="{% url 'alquileres:clientes' %}" {% if request.resolver_match.url_name|slice:":7" == 'cliente' %}aria-current="page"{% endif %}>Clientes</a>{% endif %}
+                {% if "vehiculos.gestionar" in permisos %}<a href="{% url 'alquileres:vehiculos' %}" {% if request.resolver_match.url_name|slice:":8" == 'vehiculo' %}aria-current="page"{% endif %}>Vehículos</a>
+                <a href="{% url 'alquileres:categorias' %}" {% if request.resolver_match.url_name|slice:":9" == 'categoria' %}aria-current="page"{% endif %}>Categorías</a>{% endif %}
                 {% if "usuarios.restablecer_clave" in permisos %}<a href="{% url 'restablecer_clave' %}" {% if request.resolver_match.url_name == 'restablecer_clave' %}aria-current="page"{% endif %}>Restablecer clave</a>{% endif %}
                 {% endif %}
                 {% if usuario_logueado %}<a href="{% url 'logout' %}">Salir ({{ usuario_logueado.nombre_usuario }})</a>{% endif %}

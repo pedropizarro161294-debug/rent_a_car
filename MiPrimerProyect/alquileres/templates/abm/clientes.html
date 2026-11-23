@@ -1,0 +1,49 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Clientes{% endblock %}
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Alquileres / Clientes</p>
+		<h1>Clientes</h1>
+		<p class="muted">Personas que pueden alquilar vehículos.</p>
+	</div>
+	<a class="button" href="{% url 'alquileres:cliente_alta' %}"><span aria-hidden="true">＋</span> Nuevo cliente</a>
+</section>
+<form class="toolbar" method="get">
+	<div class="field">
+		<label for="q">Buscar cliente</label>
+		<input id="q" type="search" name="q" value="{{ q }}" placeholder="Apellido, nombre, DNI o correo">
+	</div>
+	{% include "abm/_filtro_estado.html" %}
+	<button class="button" type="submit">Filtrar</button>
+</form>
+{% if clientes %}
+<section class="table-wrap">
+	<div class="table-count">{{ clientes|length }} resultado{{ clientes|length|pluralize:"s" }}</div>
+	<table>
+		<thead><tr><th>Cliente</th><th>DNI</th><th>Correo</th><th>Teléfono</th><th>Domicilio</th><th>Alta</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+		<tbody>
+		{% for c in clientes %}
+		<tr>
+			<td><span class="person">{{ c.apellido }}, {{ c.nombre }}</span></td>
+			<td>{{ c.dni }}</td>
+			<td>{{ c.correo_electronico|default:"-" }}</td>
+			<td>{% for t in c.telefonos.all %}{{ t.telefono }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</td>
+			<td>{{ c.domicilio|default:"-" }}</td>
+			<td>{{ c.fecha_alta_cliente|date:"d/m/Y" }}</td>
+			<td><span class="badge {% if c.estado == 'INACTIVO' %}inactive{% endif %}">{{ c.get_estado_display }}</span></td>
+			<td><div class="actions">
+				<a class="button secondary" href="{% url 'alquileres:cliente_editar' c.pk %}">Editar</a>
+				<form method="post" action="{% url 'alquileres:cliente_estado' c.pk %}">{% csrf_token %}
+					<button class="button {% if c.estado == 'ACTIVO' %}danger{% else %}secondary{% endif %}" type="submit">{% if c.estado == 'ACTIVO' %}Dar de baja{% else %}Reactivar{% endif %}</button>
+				</form>
+			</div></td>
+		</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state"><p class="eyebrow">Sin resultados</p><h2>No hay clientes para mostrar</h2><p>Cambiá el filtro o registrá un cliente nuevo.</p></section>
+{% endif %}
+{% endblock %}

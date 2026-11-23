@@ -534,3 +534,175 @@ tbody tr:hover {
         padding: 17px;
     }
 }
+/* ---------- Hito 3: proceso de alquiler y ABM ---------- */
+nav {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+nav a {
+    padding: 8px 10px;
+}
+
+.badge.anulado {
+    background: #fbe3dd;
+    color: #913b2c;
+}
+
+.badge.finalizado {
+    background: #e3ebf5;
+    color: #2c4f7c;
+}
+
+.badge.alquilado {
+    background: #fff1c9;
+    color: #7a5a00;
+}
+
+.form-panel.wide {
+    max-width: none;
+}
+
+.proceso-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+.totales {
+    position: sticky;
+    top: 16px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.totales dl {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    margin: 12px 0 0;
+}
+
+.totales dt {
+    color: var(--muted);
+}
+
+.totales dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.totales .total {
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.vehiculos-lista {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vehiculos-lista label {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fbfcfa;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.vehiculos-lista input {
+    width: auto;
+}
+
+.vehiculos-lista label:has(input:checked) {
+    border-color: var(--green);
+    background: #e8f4ed;
+}
+
+.tarifa {
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.ficha {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ficha div span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.ficha div strong {
+    display: block;
+    margin-top: 4px;
+}
+
+.section-title {
+    margin: 24px 0 10px;
+}
+
+.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.anulacion {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--coral);
+    border-radius: 4px;
+    background: #fff0ec;
+    color: #6f2e22;
+}
+
+@media (max-width: 900px) {
+    .proceso-grid,
+    .ficha {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-grid > .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-grid > .campo.full {
+    grid-column: 1 / -1;
+}
+
+.brand {
+    flex-shrink: 0;
+}
+
+nav {
+    gap: 2px;
+}
+
+nav a {
+    font-size: 13.5px;
+}

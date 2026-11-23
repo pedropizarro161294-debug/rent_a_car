@@ -218,26 +218,75 @@ class Pago(models.Model):
 
 
 class ContratoAlquiler(models.Model):
+    """Cabecera del proceso de alquiler (Hito 3). El detalle está en DetalleContrato."""
+
+    ESTADO_CONTRATO = [
+        ("CONFIRMADO", "Confirmado"),
+        ("FINALIZADO", "Finalizado"),
+        ("ANULADO", "Anulado"),
+    ]
+
     id_contrato = models.AutoField(db_column="ID_CONTRATO", primary_key=True)
-    id_reserva = models.ForeignKey(Reserva, models.PROTECT, db_column="ID_RESERVA", related_name="contratos")
+    numero_contrato = models.CharField(db_column="NUMERO_CONTRATO", max_length=20, unique=True, blank=True, null=True, editable=False)
+    fecha_contrato = models.DateTimeField(db_column="FECHA_CONTRATO", default=timezone.now, editable=False)
+    id_reserva = models.ForeignKey(Reserva, models.PROTECT, db_column="ID_RESERVA", related_name="contratos", blank=True, null=True)
     id_cliente = models.ForeignKey(Cliente, models.PROTECT, db_column="ID_CLIENTE", related_name="contratos")
-    id_vehiculo = models.ForeignKey(Vehiculo, models.PROTECT, db_column="ID_VEHICULO", related_name="contratos")
+    # Usuario logueado que registra la operación.
     id_empleado = models.ForeignKey(Empleado, models.PROTECT, db_column="ID_EMPLEADO", related_name="contratos")
     fecha_inicio = models.DateField(db_column="FECHA_INICIO")
     fecha_fin = models.DateField(db_column="FECHA_FIN")
-    monto_total = models.DecimalField(db_column="MONTO_TOTAL", max_digits=12, decimal_places=2)
+    cantidad_dias = models.PositiveIntegerField(db_column="CANTIDAD_DIAS", default=1)
+    subtotal = models.DecimalField(db_column="SUBTOTAL", max_digits=12, decimal_places=2, default=0)
+    porcentaje_descuento = models.DecimalField(db_column="PORCENTAJE_DESCUENTO", max_digits=5, decimal_places=2, default=0)
+    importe_descuento = models.DecimalField(db_column="IMPORTE_DESCUENTO", max_digits=12, decimal_places=2, default=0)
+    importe_iva = models.DecimalField(db_column="IMPORTE_IVA", max_digits=12, decimal_places=2, default=0)
+    monto_total = models.DecimalField(db_column="MONTO_TOTAL", max_digits=12, decimal_places=2, default=0)
     condiciones = models.TextField(db_column="CONDICIONES", blank=True, null=True)
-    estado = models.CharField(db_column="ESTADO", max_length=15, default="VIGENTE")
+    estado = models.CharField(db_column="ESTADO", max_length=15, choices=ESTADO_CONTRATO, default="CONFIRMADO")
     fecha_alta = models.DateField(db_column="FECHA_ALTA", auto_now_add=True)
+    fecha_finalizacion = models.DateTimeField(db_column="FECHA_FINALIZACION", blank=True, null=True)
+    # Datos de anulación: no se borra nada, se cambia el estado y se registra quién, cuándo y por qué.
+    fecha_anulacion = models.DateTimeField(db_column="FECHA_ANULACION", blank=True, null=True)
+    motivo_anulacion = models.CharField(db_column="MOTIVO_ANULACION", max_length=255, blank=True, null=True)
+    id_empleado_anulacion = models.ForeignKey(
+        Empleado,
+        models.PROTECT,
+        db_column="ID_EMPLEADO_ANULACION",
+        related_name="contratos_anulados",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         managed = True
         db_table = "contrato_alquiler"
+        ordering = ["-id_contrato"]
         verbose_name = "contrato de alquiler"
         verbose_name_plural = "contratos de alquiler"
 
     def __str__(self):
-        return f"Contrato {self.id_contrato}"
+        return f"Contrato {self.numero_contrato or self.id_contrato}"
+
+
+class DetalleContrato(models.Model):
+    """Detalle del contrato: un renglón por cada vehículo alquilado."""
+
+    id_detalle = models.AutoField(db_column="ID_DETALLE", primary_key=True)
+    id_contrato = models.ForeignKey(ContratoAlquiler, models.PROTECT, db_column="ID_CONTRATO", related_name="detalles")
+    id_vehiculo = models.ForeignKey(Vehiculo, models.PROTECT, db_column="ID_VEHICULO", related_name="detalles_contrato")
+    tarifa_diaria = models.DecimalField(db_column="TARIFA_DIARIA", max_digits=10, decimal_places=2)
+    cantidad_dias = models.PositiveIntegerField(db_column="CANTIDAD_DIAS")
+    subtotal = models.DecimalField(db_column="SUBTOTAL", max_digits=12, decimal_places=2)
+
+    class Meta:
+        managed = True
+        db_table = "detalle_contrato"
+        constraints = [
+            models.UniqueConstraint(fields=["id_contrato", "id_vehiculo"], name="uq_detalle_contrato_vehiculo"),
+        ]
+
+    def __str__(self):
+        return f"{self.id_contrato} - {self.id_vehiculo}"
 
 
 class Entrega(models.Model):
