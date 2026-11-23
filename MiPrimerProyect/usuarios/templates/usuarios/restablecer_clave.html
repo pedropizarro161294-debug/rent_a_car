@@ -1,0 +1,16 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Restablecer clave{% endblock %}
+{% block content %}
+<section class="page-heading"><div>
+  <p class="eyebrow">Seguridad / Claves</p>
+  <h1>Restablecer clave</h1>
+  <p class="muted">Se genera una clave nueva (se guarda con hash) y el empleado la tiene que cambiar en su próximo ingreso.</p>
+</div></section>
+<section class="form-panel">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-grid"><p class="full">{{ form.usuario.label_tag }}{{ form.usuario }}{{ form.usuario.errors }}</p></div>
+    <div class="form-actions"><button class="button" type="submit">Generar nueva clave</button></div>
+  </form>
+</section>
+{% endblock %}

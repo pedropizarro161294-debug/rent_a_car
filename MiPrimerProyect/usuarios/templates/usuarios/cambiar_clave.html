@@ -1,0 +1,18 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Cambiar clave{% endblock %}
+{% block content %}
+<section class="page-heading"><div>
+  <p class="eyebrow">Seguridad / Mi clave</p>
+  <h1>Cambiar clave</h1>
+  {% if usuario_logueado.debe_cambiar_clave %}<p class="muted">Tu clave es temporal. Definí una nueva para continuar.</p>{% endif %}
+</div></section>
+<section class="form-panel">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form %}<p class="full">{{ field.label_tag }}{{ field }}{{ field.errors }}</p>{% endfor %}
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Guardar nueva clave</button></div>
+  </form>
+</section>
+{% endblock %}

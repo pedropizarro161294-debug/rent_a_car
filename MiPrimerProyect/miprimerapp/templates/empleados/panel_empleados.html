@@ -1,0 +1,88 @@
+{% extends "empleados/base_empleados.html" %}
+
+{% block title %}Panel de empleados{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Personas / Directorio</p>
+		<h1>Equipo de trabajo</h1>
+		<p class="muted">Consulta y administra los datos personales y las cuentas de acceso del equipo.</p>
+	</div>
+	{% if "empleados.gestionar" in permisos %}<a class="button" href="{% url 'empleados:alta' %}"><span aria-hidden="true">＋</span> Agregar empleado</a>{% endif %}
+</section>
+
+<section class="stats" aria-label="Resumen de empleados">
+	<article class="stat"><span class="stat-label">Total del equipo</span><strong>{{ total_empleados }}</strong></article>
+	<article class="stat"><span class="stat-label">Empleados activos</span><strong>{{ empleados_activos }}</strong></article>
+	<article class="stat"><span class="stat-label">Empleados inactivos</span><strong>{{ empleados_inactivos }}</strong></article>
+</section>
+
+<form class="toolbar" method="get">
+	<div class="field">
+		<label for="q">Buscar empleado</label>
+		<input id="q" type="search" name="q" value="{{ busqueda }}" placeholder="Nombre, DNI, usuario o correo">
+	</div>
+	<div class="field narrow">
+		<label for="estado">Estado</label>
+		<select id="estado" name="estado">
+			<option value="todos" {% if estado_seleccionado == "todos" %}selected{% endif %}>Todos</option>
+			<option value="ACTIVO" {% if estado_seleccionado == "ACTIVO" %}selected{% endif %}>Activos</option>
+			<option value="INACTIVO" {% if estado_seleccionado == "INACTIVO" %}selected{% endif %}>Inactivos</option>
+		</select>
+	</div>
+	<button class="button" type="submit">Filtrar</button>
+	{% if busqueda or estado_seleccionado != "todos" %}<a class="button secondary" href="{% url 'empleados:panel' %}">Limpiar</a>{% endif %}
+</form>
+
+{% if empleados %}
+<section class="table-wrap" aria-label="Listado de empleados">
+	<div class="table-count">{{ empleados|length }} resultado{{ empleados|length|pluralize:"s" }}</div>
+	<table>
+		<thead><tr><th>Empleado</th><th>DNI</th>{% if "usuarios.ver" in permisos %}<th>Correo</th><th>Usuario</th><th>Perfil</th>{% endif %}<th>Alta</th>{% if "usuarios.ver" in permisos %}<th>Últ. modificación</th><th>Baja</th>{% endif %}<th>Estado</th>{% if "usuarios.ver" in permisos %}<th>Clave pendiente</th>{% endif %}<th><span class="sr-only">Acciones</span></th></tr></thead>
+		<tbody>
+			{% for empleado in empleados %}
+			<tr>
+				<td><span class="person">{{ empleado.apellido }}, {{ empleado.nombre }}</span></td>
+				<td>{{ empleado.dni }}</td>
+				{% if "usuarios.ver" in permisos %}
+				<td>{{ empleado.correo|default:"-" }}</td>
+				<td>{{ empleado.nombre_usuario|default:"-" }}</td>
+				<td>{{ empleado.id_perfil|default:"-" }}</td>
+				{% endif %}
+				<td>{{ empleado.fecha_alta|date:"d/m/Y" }}</td>
+				{% if "usuarios.ver" in permisos %}
+				<td>{{ empleado.fecha_ultima_modificacion|date:"d/m/Y H:i"|default:"-" }}</td>
+				<td>{{ empleado.fecha_baja|date:"d/m/Y H:i"|default:"-" }}</td>
+				{% endif %}
+				<td><span class="badge {% if empleado.activo == 'NO' %}inactive{% endif %}">{{ empleado.get_activo_display }}</span></td>
+				{% if "usuarios.ver" in permisos %}
+				<td>{% if empleado.nombre_usuario %}{{ empleado.debe_cambiar_clave|yesno:"Sí,No" }}{% else %}-{% endif %}</td>
+				{% endif %}
+				<td>
+					{% if "empleados.gestionar" in permisos %}
+					<div class="actions">
+						<a class="button secondary" href="{% url 'empleados:editar' empleado.id_empleado %}">Editar</a>
+						{% if empleado.nombre_usuario and "usuarios.restablecer_clave" in permisos %}<a class="button secondary" href="{% url 'restablecer_clave' %}?dni={{ empleado.dni }}">Restablecer clave</a>{% endif %}
+						<form method="post" action="{% url 'empleados:cambiar_estado' empleado.id_empleado %}">
+							{% csrf_token %}
+							<input type="hidden" name="next" value="{% url 'empleados:panel' %}">
+							<button class="button {% if empleado.activo == 'SI' %}danger{% else %}secondary{% endif %}" type="submit">{% if empleado.activo == 'SI' %}Dar de baja{% else %}Reactivar{% endif %}</button>
+						</form>
+					</div>
+					{% endif %}
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state">
+	<p class="eyebrow">Sin resultados</p>
+	<h2>{% if busqueda %}No encontramos coincidencias{% else %}Aún no hay empleados{% endif %}</h2>
+	<p>{% if busqueda %}Prueba con otro nombre, DNI o dato de acceso.{% else %}Agrega el primer perfil para comenzar a organizar el equipo.{% endif %}</p>
+	{% if not busqueda %}<a class="button" href="{% url 'empleados:alta' %}">Agregar empleado</a>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

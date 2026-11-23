@@ -1,0 +1,27 @@
+{% extends "empleados/base_empleados.html" %}
+
+{% block title %}Editar empleado{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Personas / Perfil {{ empleado.id_empleado }}</p>
+		<h1>Editar empleado</h1>
+		<p class="muted">Solo se puede modificar el correo de {{ empleado.nombre }} {{ empleado.apellido }}.</p>
+	</div>
+</section>
+<section class="form-panel">
+	<form method="post" novalidate>
+		{% csrf_token %}
+		{% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors }}</div>{% endif %}
+		<div class="form-grid">
+			{% for field in form %}
+				<p>
+					{{ field.label_tag }}{{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}
+				</p>
+			{% endfor %}
+		</div>
+		<div class="form-actions"><a class="button secondary" href="{% url 'empleados:panel' %}">Cancelar</a><button class="button" type="submit">Guardar cambios</button></div>
+	</form>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "empleados/base_empleados.html" %}
+
+{% block title %}Bajas de empleados{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Personas / Estado laboral</p>
+		<h1>Dar de baja</h1>
+		<p class="muted">Desactiva perfiles sin borrar el historial asociado a reservas y pagos.</p>
+	</div>
+</section>
+<div class="notice">La baja es lógica: el registro se conserva y puede reactivarse desde el listado general.</div>
+{% if empleados %}
+<section class="table-wrap" aria-label="Empleados activos">
+	<div class="table-count">{{ empleados|length }} empleado{{ empleados|length|pluralize:"s" }} activo{{ empleados|length|pluralize:"s" }}</div>
+	<table>
+		<thead><tr><th>Empleado</th><th>DNI</th><th>Perfil</th><th>Fecha de alta</th><th>Acción</th></tr></thead>
+		<tbody>
+			{% for empleado in empleados %}
+			<tr>
+				<td><span class="person">{{ empleado.apellido }}, {{ empleado.nombre }}</span></td>
+				<td>{{ empleado.dni }}</td>
+				<td>{{ empleado.id_perfil|default:"-" }}</td>
+				<td>{{ empleado.fecha_alta|date:"d/m/Y" }}</td>
+				<td>
+					<form class="actions" method="post" action="{% url 'empleados:cambiar_estado' empleado.id_empleado %}">
+						{% csrf_token %}
+						<input type="hidden" name="next" value="{% url 'empleados:bajas' %}">
+						<button class="button danger" type="submit">Dar de baja</button>
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</section>
+{% else %}
+<section class="empty-state"><h2>No hay empleados activos</h2><p>El listado general conserva los perfiles inactivos.</p><a class="button secondary" href="{% url 'empleados:panel' %}">Volver al equipo</a></section>
+{% endif %}
+{% endblock %}

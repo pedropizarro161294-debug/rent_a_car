@@ -1,0 +1,15 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}{{ accion }}{% endblock %}
+{% block content %}
+<section class="page-heading"><div>
+  <p class="eyebrow">Equipo / Accesos</p>
+  <h1>{{ accion }}: listo</h1>
+  <p class="muted">Usuario <b>{{ u.nombre_usuario }}</b> ({{ u.apellido }}, {{ u.nombre }}) – Perfil {{ u.id_perfil }}</p>
+</div></section>
+<section class="form-panel">
+  <p>Clave temporal:</p>
+  <p><code style="font-size:26px;letter-spacing:1px">{{ clave }}</code></p>
+  <div class="notice">Esta clave se muestra una sola vez (en la base solo queda el hash). Se le va a pedir que la cambie al ingresar.</div>
+  <a class="button" href="{% url 'empleados:panel' %}">Volver al equipo</a>
+</section>
+{% endblock %}

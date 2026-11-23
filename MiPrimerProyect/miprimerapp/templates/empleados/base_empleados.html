@@ -1,0 +1,32 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Equipo{% endblock %} | Rent a Car</title>
+    <link rel="stylesheet" href="{% static 'css/empleados.css' %}">
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="{% url 'empleados:panel' %}"><span class="brand-mark">RN</span><span>Rent a Car <span class="brand-caption">Alquiler de autos y camionetas 4x4</span></span></a>
+            <nav aria-label="Navegación principal">
+                {% if usuario_logueado and not usuario_logueado.debe_cambiar_clave %}
+                {% if "empleados.ver" in permisos %}<a href="{% url 'empleados:panel' %}" {% if request.resolver_match.url_name == 'panel' or request.resolver_match.url_name == 'listado' %}aria-current="page"{% endif %}>Empleados</a>{% endif %}
+                {% if "empleados.gestionar" in permisos %}<a href="{% url 'empleados:alta' %}" {% if request.resolver_match.url_name == 'alta' %}aria-current="page"{% endif %}>Alta</a>
+                <a href="{% url 'empleados:bajas' %}" {% if request.resolver_match.url_name == 'bajas' %}aria-current="page"{% endif %}>Bajas</a>{% endif %}
+                {% if "usuarios.restablecer_clave" in permisos %}<a href="{% url 'restablecer_clave' %}" {% if request.resolver_match.url_name == 'restablecer_clave' %}aria-current="page"{% endif %}>Restablecer clave</a>{% endif %}
+                {% endif %}
+                {% if usuario_logueado %}<a href="{% url 'logout' %}">Salir ({{ usuario_logueado.nombre_usuario }})</a>{% endif %}
+            </nav>
+        </div>
+    </header>
+    <main>
+        {% if messages %}
+            <ul class="messages">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

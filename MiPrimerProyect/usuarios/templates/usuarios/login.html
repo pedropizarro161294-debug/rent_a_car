@@ -1,0 +1,18 @@
+{% extends "empleados/base_empleados.html" %}
+{% block title %}Ingresar{% endblock %}
+{% block content %}
+<section class="page-heading"><div>
+  <p class="eyebrow">Seguridad / Acceso</p>
+  <h1>Ingreso al sistema</h1>
+  <p class="muted">Ingresá con tu usuario (apellido + inicial del nombre) y tu clave.</p>
+</div></section>
+<section class="form-panel">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    <div class="form-grid">
+      {% for field in form %}<p>{{ field.label_tag }}{{ field }}{{ field.errors }}</p>{% endfor %}
+    </div>
+    <div class="form-actions"><button class="button" type="submit">Ingresar</button></div>
+  </form>
+</section>
+{% endblock %}

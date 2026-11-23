@@ -1,0 +1,101 @@
+from django.contrib import messages
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .forms import EmpleadoForm, EmpleadoModificarForm
+from .models import Empleado
+from usuarios.seguridad import generar_clave_temporal, permiso_requerido
+
+
+@permiso_requerido("empleados.ver")
+def panel_empleados(request):
+	empleados = Empleado.objects.select_related("id_perfil").all()
+	busqueda = request.GET.get("q", "").strip()
+	estado = request.GET.get("estado", "todos")
+
+	if busqueda:
+		coincidencias = (
+			Q(nombre__icontains=busqueda)
+			| Q(apellido__icontains=busqueda)
+			| Q(dni__icontains=busqueda)
+		)
+		if "usuarios.ver" in request.usuario.permisos():
+			coincidencias |= (
+				Q(correo__icontains=busqueda)
+				| Q(nombre_usuario__icontains=busqueda)
+				| Q(id_perfil__nombre_perfil__icontains=busqueda)
+			)
+		empleados = empleados.filter(coincidencias)
+	if estado in {"ACTIVO", "INACTIVO"}:
+		empleados = empleados.filter(activo="SI" if estado == "ACTIVO" else "NO")
+	else:
+		estado = "todos"
+
+	return render(
+		request,
+		"empleados/panel_empleados.html",
+		{
+			"empleados": empleados,
+			"busqueda": busqueda,
+			"estado_seleccionado": estado,
+			"total_empleados": Empleado.objects.count(),
+			"empleados_activos": Empleado.objects.filter(activo="SI").count(),
+			"empleados_inactivos": Empleado.objects.filter(activo="NO").count(),
+		},
+	)
+
+
+@permiso_requerido("empleados.gestionar")
+def alta_empleado(request):
+	form = EmpleadoForm(request.POST or None)
+	if request.method == "POST" and form.is_valid():
+		empleado = form.save(commit=False)
+		clave = generar_clave_temporal()
+		empleado.set_clave(clave, debe_cambiar=True)
+		empleado.save()
+		return render(
+			request,
+			"usuarios/clave_generada.html",
+			{"u": empleado, "clave": clave, "accion": "Alta de empleado"},
+		)
+	return render(request, "empleados/alta_empleados.html", {"form": form})
+
+
+@permiso_requerido("empleados.gestionar")
+def editar_empleado(request, empleado_id):
+	empleado = get_object_or_404(Empleado, pk=empleado_id)
+	form = EmpleadoModificarForm(request.POST or None, instance=empleado)
+	if request.method == "POST" and form.is_valid():
+		form.save()
+		messages.success(request, f"Se guardaron los cambios de {empleado.nombre} {empleado.apellido}.")
+		return redirect("empleados:panel")
+	return render(
+		request,
+		"empleados/editar_empleado.html",
+		{"form": form, "empleado": empleado},
+	)
+
+
+@permiso_requerido("empleados.gestionar")
+def baja_empleados(request):
+	empleados = Empleado.objects.filter(activo="SI")
+	return render(request, "empleados/baja_empleados.html", {"empleados": empleados})
+
+
+@require_POST
+@permiso_requerido("empleados.gestionar")
+def cambiar_estado_empleado(request, empleado_id):
+	empleado = get_object_or_404(Empleado, pk=empleado_id)
+	if empleado.dni == str(request.usuario.dni) and empleado.activo == "SI":
+		messages.error(request, "No podés darte de baja a vos mismo.")
+		return redirect(request.POST.get("next") or "empleados:panel")
+	if empleado.activo == "SI":
+		empleado.dar_de_baja()
+	else:
+		empleado.activo = "SI"
+		empleado.fecha_baja = None
+		empleado.save(update_fields=["activo", "fecha_baja", "fecha_ultima_modificacion"])
+	accion = "dado de baja" if empleado.activo == "NO" else "reactivado"
+	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue {accion}.")
+	return redirect(request.POST.get("next") or "empleados:panel")
