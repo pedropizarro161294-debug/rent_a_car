@@ -21,11 +21,12 @@
 				<div class="campo full">{{ form.condiciones.label_tag }}{{ form.condiciones }}</div>
 			</div>
 			<h2 class="section-title">Vehículos disponibles</h2>
+			<p class="helptext">Elegí primero las fechas: los vehículos que ya están alquilados en ese período aparecen deshabilitados.</p>
 			{{ form.vehiculos.errors }}
 			{% if vehiculos_disponibles %}
 			<ul class="vehiculos-lista">
 				{% for cb in form.vehiculos %}
-				<li><label>{{ cb.tag }}<span>{{ cb.choice_label }}</span><span class="tarifa" data-vehiculo="{{ cb.data.value }}"></span></label></li>
+				<li><label>{{ cb.tag }}<span>{{ cb.choice_label }}</span><span class="ocupado" data-vehiculo="{{ cb.data.value }}" hidden></span><span class="tarifa" data-vehiculo="{{ cb.data.value }}"></span></label></li>
 				{% endfor %}
 			</ul>
 			{% else %}
@@ -48,6 +49,7 @@
 	</div>
 </form>
 {{ tarifas|json_script:"tarifas" }}
+{{ ocupaciones|json_script:"ocupaciones" }}
 <script>
 (function () {
 	const tarifas = JSON.parse(document.getElementById("tarifas").textContent);
@@ -60,7 +62,24 @@
 	const ini = document.getElementById("id_fecha_inicio");
 	const fin = document.getElementById("id_fecha_fin");
 	const desc = document.getElementById("id_porcentaje_descuento");
+	const ocupaciones = JSON.parse(document.getElementById("ocupaciones").textContent);
+	const dmy = (iso) => iso.split("-").reverse().join("/");
+	// Deshabilita los vehículos que tienen un alquiler confirmado que se superpone con las fechas elegidas.
+	function disponibilidad() {
+		document.querySelectorAll('input[name="vehiculos"]').forEach((cb) => {
+			const aviso = document.querySelector('.ocupado[data-vehiculo="' + cb.value + '"]');
+			const choque = (ini.value && fin.value)
+				? (ocupaciones[cb.value] || []).find((o) => o.inicio <= fin.value && o.fin >= ini.value)
+				: null;
+			cb.disabled = !!choque;
+			if (choque) cb.checked = false;
+			cb.closest("li").classList.toggle("no-disponible", !!choque);
+			aviso.hidden = !choque;
+			aviso.textContent = choque ? "Alquilado del " + dmy(choque.inicio) + " al " + dmy(choque.fin) : "";
+		});
+	}
 	function calcular() {
+		disponibilidad();
 		let dias = 0;
 		if (ini.value && fin.value) {
 			const d = (new Date(fin.value) - new Date(ini.value)) / 86400000;

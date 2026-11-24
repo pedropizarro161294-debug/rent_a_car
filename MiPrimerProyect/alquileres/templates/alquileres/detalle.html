@@ -12,7 +12,11 @@
 		{% if "alquileres.comprobante" in permisos %}<a class="button secondary" href="{% url 'alquileres:comprobante' contrato.pk %}" target="_blank">Comprobante / PDF</a>{% endif %}
 		{% if contrato.estado == "CONFIRMADO" %}
 			{% if "alquileres.finalizar" in permisos %}
-			<form method="post" action="{% url 'alquileres:finalizar' contrato.pk %}">{% csrf_token %}<button class="button" type="submit">Finalizar (devolución)</button></form>
+				{% if puede_finalizar %}
+				<form method="post" action="{% url 'alquileres:finalizar' contrato.pk %}" onsubmit="return confirm('¿Confirmás que el cliente devolvió los vehículos? El alquiler quedará finalizado.');">{% csrf_token %}<button class="button" type="submit">Finalizar (devolución)</button></form>
+				{% else %}
+				<button class="button" type="button" disabled title="Se habilita desde la fecha de retiro ({{ contrato.fecha_inicio|date:'d/m/Y' }})">Finalizar (devolución)</button>
+				{% endif %}
 			{% endif %}
 			{% if "alquileres.anular" in permisos %}<a class="button danger" href="{% url 'alquileres:anular' contrato.pk %}">Anular</a>{% endif %}
 		{% endif %}

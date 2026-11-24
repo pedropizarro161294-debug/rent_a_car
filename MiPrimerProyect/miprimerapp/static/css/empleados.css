@@ -615,7 +615,7 @@ nav a {
 
 .vehiculos-lista label {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
@@ -633,6 +633,27 @@ nav a {
 .vehiculos-lista label:has(input:checked) {
     border-color: var(--green);
     background: #e8f4ed;
+}
+
+.vehiculos-lista li.no-disponible label {
+    background: #f3f3f1;
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.ocupado {
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fdecea;
+    color: #a3341f;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .tarifa {

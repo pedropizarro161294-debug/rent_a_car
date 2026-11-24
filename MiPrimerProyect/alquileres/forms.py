@@ -6,6 +6,8 @@ from django.utils import timezone
 
 from miprimerapp.models import CategoriaVehiculo, Cliente, ContratoAlquiler, TelefonoCliente, Vehiculo
 
+from . import servicios
+
 MAX_DIAS = 90
 MAX_DESCUENTO = Decimal("30")
 
@@ -146,7 +148,7 @@ class AlquilerForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["id_cliente"].queryset = Cliente.objects.filter(estado="ACTIVO").order_by("apellido", "nombre")
         self.fields["vehiculos"].queryset = (
-            Vehiculo.objects.filter(estado="ACTIVO", estado_operativo="DISPONIBLE")
+            servicios.vehiculos_alquilables()
             .select_related("id_categoria")
             .order_by("id_categoria__nombre_categoria", "patente")
         )
@@ -162,6 +164,11 @@ class AlquilerForm(forms.Form):
                 self.add_error("fecha_fin", "La devolución no puede ser anterior al retiro.")
             elif fin - inicio > timedelta(days=MAX_DIAS):
                 self.add_error("fecha_fin", f"El alquiler no puede superar {MAX_DIAS} días.")
+            elif datos.get("vehiculos"):
+                ocupados = servicios.vehiculos_ocupados(inicio, fin, [v.pk for v in datos["vehiculos"]])
+                if ocupados:
+                    patentes = ", ".join(v.patente for v in datos["vehiculos"] if v.pk in ocupados)
+                    self.add_error("vehiculos", f"Ya está alquilado en esas fechas: {patentes}.")
         return datos
 
 

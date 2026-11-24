@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import floatformat
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from miprimerapp.models import ContratoAlquiler
@@ -34,14 +35,22 @@ def registrar(request):
             messages.success(request, f"Se registró el alquiler {contrato.numero_contrato} por un total de ${floatformat(contrato.monto_total, '2g')}.")
             return redirect("alquileres:detalle", pk=contrato.pk)
     # Tarifas para el cálculo en pantalla (el cálculo que vale es el del servidor).
-    tarifas = {str(v.pk): str(v.id_categoria.tarifa) for v in form.fields["vehiculos"].queryset}
+    vehiculos = form.fields["vehiculos"].queryset
+    tarifas = {str(v.pk): str(v.id_categoria.tarifa) for v in vehiculos}
+    # Períodos ya ocupados de cada vehículo, para avisar en pantalla según las fechas elegidas.
+    ocupaciones = {}
+    for d in servicios.reservas_confirmadas([v.pk for v in vehiculos]).select_related("id_contrato").order_by("id_contrato__fecha_inicio"):
+        ocupaciones.setdefault(str(d.id_vehiculo_id), []).append(
+            {"inicio": d.id_contrato.fecha_inicio.isoformat(), "fin": d.id_contrato.fecha_fin.isoformat()}
+        )
     return render(
         request,
         "alquileres/registrar.html",
         {
             "form": form,
             "tarifas": tarifas,
-            "vehiculos_disponibles": form.fields["vehiculos"].queryset,
+            "ocupaciones": ocupaciones,
+            "vehiculos_disponibles": vehiculos,
             "tasa_iva": servicios.TASA_IVA,
         },
     )
@@ -94,6 +103,7 @@ def detalle(request, pk):
             "contrato": contrato,
             "detalles": contrato.detalles.select_related("id_vehiculo__id_categoria"),
             "form_anulacion": AnulacionForm(),
+            "puede_finalizar": contrato.fecha_inicio <= timezone.localdate(),
         },
     )
 
