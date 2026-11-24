@@ -178,3 +178,15 @@ class AbmTests(BaseAlquiler):
         ingresar(self.client, self.admin.nombre_usuario)
         self.client.post(reverse("alquileres:vehiculo_alta"), {"patente": "ad 789 gh", "marca": "VW", "modelo": "Amarok", "id_categoria": self.categoria.pk, "estado_operativo": "DISPONIBLE"})
         self.assertTrue(Vehiculo.objects.filter(patente="AD789GH").exists())
+
+
+class DatosEjemploTests(TestCase):
+    def test_carga_y_se_puede_repetir(self):
+        from django.core.management import call_command
+        from io import StringIO
+
+        call_command("cargar_datos_ejemplo", stdout=StringIO())
+        call_command("cargar_datos_ejemplo", stdout=StringIO())
+        self.assertEqual(CategoriaVehiculo.objects.get(nombre_categoria="Camioneta 4x4").tarifa, Decimal("170000"))
+        self.assertEqual(Vehiculo.objects.filter(patente__in=["AE123FG", "AF456HJ", "AG789KL"]).count(), 3)
+        self.assertEqual(Vehiculo.objects.get(patente="AF456HJ").id_categoria.nombre_categoria, "Sedán")
