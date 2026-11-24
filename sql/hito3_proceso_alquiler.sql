@@ -105,13 +105,20 @@ UPDATE `perfil` SET `DESCRIPCION` = 'Consulta empleados; registra y consulta alq
 COMMIT;
 
 -- ---------------------------------------------------------------------
--- 5) Datos de ejemplo (opcional) para probar el proceso
+-- 5) Datos de ejemplo: categorías con tarifas reales de referencia
+--    (Perfil Rent a Car) y un vehículo por categoría (patentes inventadas).
+--    Equivale a: python manage.py cargar_datos_ejemplo
 -- ---------------------------------------------------------------------
--- INSERT INTO categoria_vehiculo (NOMBRE_CATEGORIA, TARIFA, TAMANIO, EQUIPAMIENTO, PRECIO, ESTADO, FECHA_ALTA) VALUES
---   ('Económico', 35000, 'Chico', 'Aire acondicionado', 1050000, 'ACTIVO', CURDATE()),
---   ('SUV',       72000, 'Grande', '4x2, GPS',          2160000, 'ACTIVO', CURDATE());
--- INSERT INTO vehiculo (PATENTE, MARCA, MODELO, ESTADO_OPERATIVO, ID_CATEGORIA, FECHA_ALTA, ESTADO) VALUES
---   ('AE123FG', 'Fiat', 'Cronos', 'DISPONIBLE', 1, CURDATE(), 'ACTIVO'),
---   ('AE654PQ', 'Jeep', 'Compass', 'DISPONIBLE', 2, CURDATE(), 'ACTIVO');
--- INSERT INTO cliente (DNI, NOMBRE, APELLIDO, CORREO_ELECTRONICO, DOMICILIO, FECHA_ALTA_CLIENTE, ESTADO) VALUES
---   ('35111222', 'Sofía', 'López', 'sofia.lopez@mail.com', 'Av. San Martín 1234', CURDATE(), 'ACTIVO');
+INSERT INTO categoria_vehiculo (NOMBRE_CATEGORIA, TAMANIO, TARIFA, PRECIO, EQUIPAMIENTO, ESTADO, FECHA_ALTA) VALUES
+  ('Económico',     'Chico',    50000.00,  350000.00, 'Aire acondicionado, ABS, airbags, km ilimitado', 'ACTIVO', CURDATE()),
+  ('Sedán',         'Mediano',  68700.00,  480900.00, 'Aire acondicionado, ABS, airbags, baúl, km ilimitado', 'ACTIVO', CURDATE()),
+  ('Camioneta 4x4', 'Grande',  170000.00, 1190000.00, '4x4, caja automática, dirección hidráulica, aire acondicionado, ABS, airbags, km ilimitado', 'ACTIVO', CURDATE())
+ON DUPLICATE KEY UPDATE TAMANIO = VALUES(TAMANIO), TARIFA = VALUES(TARIFA), PRECIO = VALUES(PRECIO), EQUIPAMIENTO = VALUES(EQUIPAMIENTO);
+
+INSERT INTO vehiculo (PATENTE, MARCA, MODELO, ESTADO_OPERATIVO, ID_CATEGORIA, FECHA_ALTA, ESTADO)
+SELECT v.PATENTE, v.MARCA, v.MODELO, 'DISPONIBLE', c.ID_CATEGORIA, CURDATE(), 'ACTIVO'
+  FROM (SELECT 'AE123FG' AS PATENTE, 'Chevrolet' AS MARCA, 'Onix 1.4 manual' AS MODELO, 'Económico' AS CATEGORIA
+        UNION ALL SELECT 'AF456HJ', 'Renault', 'Logan 1.6 manual', 'Sedán'
+        UNION ALL SELECT 'AG789KL', 'Toyota', 'Hilux 2.8 automática 4x4', 'Camioneta 4x4') v
+  JOIN categoria_vehiculo c ON c.NOMBRE_CATEGORIA = v.CATEGORIA
+ON DUPLICATE KEY UPDATE MARCA = VALUES(MARCA), MODELO = VALUES(MODELO), ID_CATEGORIA = VALUES(ID_CATEGORIA);
