@@ -31,8 +31,18 @@
 			<option value="INACTIVO" {% if estado_seleccionado == "INACTIVO" %}selected{% endif %}>Inactivos</option>
 		</select>
 	</div>
+	{% if "usuarios.ver" in permisos %}
+	<div class="field narrow">
+		<label for="perfil">Rol</label>
+		<select id="perfil" name="perfil">
+			<option value="todos" {% if perfil_seleccionado == "todos" %}selected{% endif %}>Todos</option>
+			{% for p in perfiles %}<option value="{{ p.pk }}" {% if perfil_seleccionado == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre_perfil }}</option>{% endfor %}
+			<option value="sin" {% if perfil_seleccionado == "sin" %}selected{% endif %}>Sin rol</option>
+		</select>
+	</div>
+	{% endif %}
 	<button class="button" type="submit">Filtrar</button>
-	{% if busqueda or estado_seleccionado != "todos" %}<a class="button secondary" href="{% url 'empleados:panel' %}">Limpiar</a>{% endif %}
+	{% if busqueda or estado_seleccionado != "todos" or perfil_seleccionado != "todos" %}<a class="button secondary" href="{% url 'empleados:panel' %}">Limpiar</a>{% endif %}
 </form>
 
 {% if empleados %}

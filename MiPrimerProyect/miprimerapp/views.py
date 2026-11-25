@@ -7,6 +7,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import EmpleadoForm, EmpleadoModificarForm
 from .models import Empleado
+from usuarios.models import Perfil
 from usuarios.seguridad import generar_clave_temporal, permiso_requerido
 
 
@@ -15,6 +16,9 @@ def panel_empleados(request):
 	empleados = Empleado.objects.select_related("id_perfil").all()
 	busqueda = request.GET.get("q", "").strip()
 	estado = request.GET.get("estado", "todos")
+	puede_ver_perfiles = "usuarios.ver" in request.usuario.permisos()
+	perfiles = Perfil.objects.order_by("nombre_perfil") if puede_ver_perfiles else Perfil.objects.none()
+	perfil = request.GET.get("perfil", "todos") if puede_ver_perfiles else "todos"
 
 	if busqueda:
 		coincidencias = (
@@ -22,7 +26,7 @@ def panel_empleados(request):
 			| Q(apellido__icontains=busqueda)
 			| Q(dni__icontains=busqueda)
 		)
-		if "usuarios.ver" in request.usuario.permisos():
+		if puede_ver_perfiles:
 			coincidencias |= (
 				Q(correo__icontains=busqueda)
 				| Q(nombre_usuario__icontains=busqueda)
@@ -33,6 +37,12 @@ def panel_empleados(request):
 		empleados = empleados.filter(activo="SI" if estado == "ACTIVO" else "NO")
 	else:
 		estado = "todos"
+	if perfil == "sin":
+		empleados = empleados.filter(id_perfil__isnull=True)
+	elif perfil.isdigit() and perfiles.filter(pk=perfil).exists():
+		empleados = empleados.filter(id_perfil_id=int(perfil))
+	else:
+		perfil = "todos"
 
 	return render(
 		request,
@@ -41,6 +51,8 @@ def panel_empleados(request):
 			"empleados": empleados,
 			"busqueda": busqueda,
 			"estado_seleccionado": estado,
+			"perfiles": perfiles,
+			"perfil_seleccionado": perfil,
 			"total_empleados": Empleado.objects.count(),
 			"empleados_activos": Empleado.objects.filter(activo="SI").count(),
 			"empleados_inactivos": Empleado.objects.filter(activo="NO").count(),
