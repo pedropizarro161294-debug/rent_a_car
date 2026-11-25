@@ -732,3 +732,106 @@ nav {
 nav a {
     font-size: 13.5px;
 }
+
+/* Pantalla de confirmación de baja / reactivación */
+.confirm-card {
+    max-width: 640px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--green);
+    border-radius: 7px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.confirm-card.is-danger {
+    border-top-color: var(--coral);
+}
+
+.confirm-person {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 24px 18px;
+}
+
+.confirm-person h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+}
+
+.avatar {
+    width: 48px;
+    height: 48px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e8f4ed;
+    color: var(--green-dark);
+    font-weight: 800;
+}
+
+.is-danger .avatar {
+    background: #fbeae6;
+    color: #7a2e20;
+}
+
+.confirm-data {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 24px;
+    margin: 0;
+    padding: 18px 24px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.confirm-data dt {
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.confirm-data dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.confirm-message {
+    margin: 18px 24px 0;
+    padding: 12px 14px;
+    border-radius: 4px;
+    background: #e8f4ed;
+    color: var(--green-dark);
+}
+
+.is-danger .confirm-message {
+    background: #fbeae6;
+    color: #7a2e20;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: end;
+    gap: 10px;
+    padding: 18px 24px 22px;
+}
+
+.confirm-actions .button.danger {
+    border-color: var(--coral);
+    background: var(--coral);
+    color: #fff;
+}
+
+@media (max-width: 600px) {
+    .confirm-data {
+        grid-template-columns: 1fr;
+    }
+
+    .confirm-actions {
+        flex-direction: column-reverse;
+    }
+}

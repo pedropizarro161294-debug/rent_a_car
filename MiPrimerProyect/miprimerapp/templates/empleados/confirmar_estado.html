@@ -5,26 +5,43 @@
 {% block content %}
 <section class="page-heading">
 	<div>
-		<p class="eyebrow">Personas / Estado laboral</p>
-		<h1>{% if accion == "baja" %}¿Dar de baja a {{ empleado.nombre }} {{ empleado.apellido }}?{% else %}¿Reactivar a {{ empleado.nombre }} {{ empleado.apellido }}?{% endif %}</h1>
-		<p class="muted">DNI {{ empleado.dni }}{% if empleado.id_perfil %} · Perfil {{ empleado.id_perfil }}{% endif %}{% if empleado.nombre_usuario %} · Usuario {{ empleado.nombre_usuario }}{% endif %}</p>
+		<p class="eyebrow">Empleados / {% if accion == "baja" %}Dar de baja{% else %}Reactivar{% endif %}</p>
+		<h1>{% if accion == "baja" %}Dar de baja a un empleado{% else %}Reactivar a un empleado{% endif %}</h1>
+		<p class="muted">Revisá los datos antes de confirmar.</p>
 	</div>
 </section>
-<div class="notice">
-	{% if accion == "baja" %}
-	No va a poder entrar al sistema. Sus alquileres y pagos quedan guardados y lo podés reactivar cuando quieras.
-	{% else %}
-	Va a poder entrar de nuevo con su usuario y su clave de siempre.
-	{% endif %}
-</div>
-<section class="form-panel">
-	<form method="post">
+
+<section class="confirm-card {% if accion == 'baja' %}is-danger{% endif %}">
+	<header class="confirm-person">
+		<span class="avatar" aria-hidden="true">{{ empleado.nombre|slice:":1"|upper }}{{ empleado.apellido|slice:":1"|upper }}</span>
+		<div>
+			<h2>{{ empleado.apellido }}, {{ empleado.nombre }}</h2>
+			<span class="badge {% if empleado.activo == 'NO' %}inactive{% endif %}">{% if empleado.activo == "SI" %}Activo{% else %}Dado de baja{% endif %}</span>
+		</div>
+	</header>
+
+	<dl class="confirm-data">
+		<div><dt>DNI</dt><dd>{{ empleado.dni }}</dd></div>
+		<div><dt>Perfil</dt><dd>{{ empleado.id_perfil|default:"Sin rol" }}</dd></div>
+		<div><dt>Usuario</dt><dd>{{ empleado.nombre_usuario|default:"-" }}</dd></div>
+		<div><dt>Correo</dt><dd>{{ empleado.correo|default:"-" }}</dd></div>
+		<div><dt>Fecha de alta</dt><dd>{{ empleado.fecha_alta|date:"d/m/Y" }}</dd></div>
+		{% if empleado.fecha_baja %}<div><dt>Dado de baja el</dt><dd>{{ empleado.fecha_baja|date:"d/m/Y H:i" }}</dd></div>{% endif %}
+	</dl>
+
+	<div class="confirm-message">
+		{% if accion == "baja" %}
+		<strong>Qué va a pasar:</strong> no va a poder entrar al sistema. Sus alquileres y pagos quedan guardados y lo podés reactivar cuando quieras.
+		{% else %}
+		<strong>Qué va a pasar:</strong> va a poder entrar de nuevo con su usuario y su clave de siempre.
+		{% endif %}
+	</div>
+
+	<form method="post" class="confirm-actions">
 		{% csrf_token %}
 		<input type="hidden" name="next" value="{{ next }}">
-		<div class="form-actions">
-			<a class="button secondary" href="{{ next }}">Cancelar</a>
-			<button class="button {% if accion == 'baja' %}danger{% endif %}" type="submit">{% if accion == "baja" %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}</button>
-		</div>
+		<a class="button secondary" href="{{ next }}">Cancelar</a>
+		<button class="button {% if accion == 'baja' %}danger{% endif %}" type="submit">{% if accion == "baja" %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}</button>
 	</form>
 </section>
 {% endblock %}
