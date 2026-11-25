@@ -8,7 +8,7 @@
 	<h1>{% if accion == "baja" %}¿Dar de baja a {{ empleado.nombre }} {{ empleado.apellido }}?{% else %}¿Reactivar a {{ empleado.nombre }} {{ empleado.apellido }}?{% endif %}</h1>
 	<p class="confirm-meta">DNI {{ empleado.dni }} · {{ empleado.id_perfil|default:"Sin rol" }}{% if empleado.nombre_usuario %} · {{ empleado.nombre_usuario }}{% endif %}</p>
 	<p class="confirm-text">
-		{% if accion == "baja" %}No va a poder entrar al sistema. Sus alquileres y pagos quedan guardados y lo podés reactivar cuando quieras.{% else %}Va a poder entrar de nuevo con su usuario y su clave de siempre.{% endif %}
+		{% if accion == "baja" %}No va a poder entrar al sistema.{% else %}Va a poder entrar de nuevo.{% endif %}
 	</p>
 	<form method="post" class="confirm-buttons">
 		{% csrf_token %}
