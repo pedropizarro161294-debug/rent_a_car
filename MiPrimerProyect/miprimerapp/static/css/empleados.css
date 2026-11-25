@@ -431,6 +431,19 @@ tbody tr:hover {
     background: #e8f4ed;
 }
 
+.messages li.warning,
+.messages li.info {
+    border-left-color: #d0a52c;
+    background: #fff8df;
+    color: #5f5228;
+}
+
+.messages li.error {
+    border-left-color: var(--coral);
+    background: #fbeae6;
+    color: #7a2e20;
+}
+
 .notice {
     padding: 14px 16px;
     margin-bottom: 18px;
@@ -633,6 +646,19 @@ nav a {
 .vehiculos-lista label:has(input:checked) {
     border-color: var(--green);
     background: #e8f4ed;
+}
+
+.messages li.warning,
+.messages li.info {
+    border-left-color: #d0a52c;
+    background: #fff8df;
+    color: #5f5228;
+}
+
+.messages li.error {
+    border-left-color: var(--coral);
+    background: #fbeae6;
+    color: #7a2e20;
 }
 
 .tarifa {

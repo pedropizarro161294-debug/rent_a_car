@@ -7,7 +7,7 @@
 	<div>
 		<p class="eyebrow">Personas / Directorio</p>
 		<h1>Equipo de trabajo</h1>
-		<p class="muted">Consulta y administra los datos personales y las cuentas de acceso del equipo.</p>
+		<p class="muted">Datos y usuarios del personal.</p>
 	</div>
 	{% if "empleados.gestionar" in permisos %}<a class="button" href="{% url 'empleados:alta' %}"><span aria-hidden="true">＋</span> Agregar empleado</a>{% endif %}
 </section>
@@ -86,8 +86,8 @@
 {% else %}
 <section class="empty-state">
 	<p class="eyebrow">Sin resultados</p>
-	<h2>{% if busqueda %}No encontramos coincidencias{% else %}Aún no hay empleados{% endif %}</h2>
-	<p>{% if busqueda %}Prueba con otro nombre, DNI o dato de acceso.{% else %}Agrega el primer perfil para comenzar a organizar el equipo.{% endif %}</p>
+	<h2>{% if busqueda %}No encontramos empleados con esos datos{% else %}Todavía no hay empleados cargados{% endif %}</h2>
+	<p>{% if busqueda %}Probá con otro nombre o DNI.{% else %}Cargá el primero desde Alta.{% endif %}</p>
 	{% if not busqueda %}<a class="button" href="{% url 'empleados:alta' %}">Agregar empleado</a>{% endif %}
 </section>
 {% endif %}

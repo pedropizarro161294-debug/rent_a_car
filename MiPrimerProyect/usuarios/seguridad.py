@@ -26,7 +26,7 @@ def permiso_requerido(nombre_permiso=None):
             if request.usuario is None:
                 return redirect(f"{reverse('login')}?next={request.path}")
             if nombre_permiso and not request.usuario.tiene_permiso(nombre_permiso):
-                messages.error(request, "Tu perfil no tiene permiso para esa opción.")
+                messages.error(request, "No tenés permiso para entrar ahí.")
                 return redirect("inicio")
             return vista(request, *args, **kwargs)
         return envoltura

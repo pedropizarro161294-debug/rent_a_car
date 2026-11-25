@@ -9,7 +9,7 @@
 	</div>
 </section>
 <section class="form-panel">
-	<p class="notice">El alquiler no se borra: queda en estado Anulado con la fecha, el motivo y tu usuario, y los vehículos vuelven a estar disponibles.</p>
+	<p class="notice">El alquiler no se borra: queda como Anulado, con el motivo y tu usuario, y los vehículos vuelven a estar disponibles.</p>
 	<form method="post" novalidate>
 		{% csrf_token %}
 		<div class="form-grid"><div class="campo full">{{ form.motivo.label_tag }}{{ form.motivo }}{{ form.motivo.errors }}</div></div>

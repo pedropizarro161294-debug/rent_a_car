@@ -13,12 +13,12 @@ def login_view(request):
         if u is None or not u.verificar_clave(form.cleaned_data["clave"]):
             messages.error(request, "Usuario o clave incorrectos.")
         elif u.activo != "SI":
-            messages.error(request, "El usuario está dado de baja.")
+            messages.error(request, "Este usuario está dado de baja. Hablá con un administrador.")
         else:
             request.session.cycle_key()
             request.session[CLAVE_SESION] = u.dni
             if u.debe_cambiar_clave:
-                messages.warning(request, "Tenés que cambiar tu clave antes de seguir.")
+                messages.warning(request, "Antes de seguir, cambiá tu clave temporal.")
                 return redirect("cambiar_clave")
             return redirect(request.GET.get("next") or "empleados:panel")
     return render(request, "usuarios/login.html", {"form": form})
@@ -40,7 +40,7 @@ def cambiar_clave(request):
     if request.method == "POST" and form.is_valid():
         request.usuario.set_clave(form.cleaned_data["clave_nueva"], debe_cambiar=False)
         request.usuario.save()
-        messages.success(request, "Clave actualizada.")
+        messages.success(request, "Listo, ya cambiaste tu clave.")
         return redirect("empleados:panel")
     return render(request, "usuarios/cambiar_clave.html", {"form": form})
 

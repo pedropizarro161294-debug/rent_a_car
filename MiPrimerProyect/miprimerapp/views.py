@@ -82,7 +82,7 @@ def editar_empleado(request, empleado_id):
 	form = EmpleadoModificarForm(request.POST or None, instance=empleado)
 	if request.method == "POST" and form.is_valid():
 		form.save()
-		messages.success(request, f"Se guardaron los cambios de {empleado.nombre} {empleado.apellido}.")
+		messages.success(request, f"Guardaste los cambios de {empleado.nombre} {empleado.apellido}.")
 		return redirect("empleados:panel")
 	return render(
 		request,
@@ -151,13 +151,10 @@ def dar_de_baja_empleado(request, empleado_id):
 			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba dado de baja.")
 			return redirect(destino)
 		if empleado.pk in administradores and len(administradores) <= 1:
-			messages.error(
-				request,
-				"No se puede dar de baja al último administrador activo. Asigná otro administrador antes.",
-			)
+			messages.error(request, "Es el único administrador activo. Para darlo de baja, primero asigná otro.")
 			return redirect(destino)
 		empleado.dar_de_baja()
-	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue dado de baja.")
+	messages.success(request, f"Diste de baja a {empleado.nombre} {empleado.apellido}.")
 	return redirect(destino)
 
 
@@ -177,5 +174,5 @@ def reactivar_empleado(request, empleado_id):
 			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba activo.")
 			return redirect(destino)
 		empleado.reactivar()
-	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue reactivado.")
+	messages.success(request, f"Reactivaste a {empleado.nombre} {empleado.apellido}.")
 	return redirect(destino)
