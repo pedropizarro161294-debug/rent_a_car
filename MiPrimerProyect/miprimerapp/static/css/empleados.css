@@ -744,27 +744,7 @@ nav a {
     background: #a34532;
 }
 
-/* Variante A: mismo estilo que las demás pantallas */
-.confirm-heading {
-    margin-top: 28px;
-}
-
-.confirm-panel {
-    max-width: 620px;
-}
-
-.confirm-who {
-    display: grid;
-    gap: 4px;
-    margin-bottom: 18px;
-    font-size: 17px;
-}
-
-.confirm-panel .notice {
-    margin-bottom: 0;
-}
-
-/* Variante B: ventana centrada */
+/* Ventana centrada */
 .confirm-dialog {
     max-width: 460px;
     margin: 56px auto;
