@@ -7,7 +7,7 @@
 	<div>
 		<p class="eyebrow">Personas / Directorio</p>
 		<h1>Equipo de trabajo</h1>
-		<p class="muted">Consulta y administra los datos personales y las cuentas de acceso del equipo.</p>
+		<p class="muted">Datos y usuarios del personal.</p>
 	</div>
 	{% if "empleados.gestionar" in permisos %}<a class="button" href="{% url 'empleados:alta' %}"><span aria-hidden="true">＋</span> Agregar empleado</a>{% endif %}
 </section>
@@ -31,8 +31,18 @@
 			<option value="INACTIVO" {% if estado_seleccionado == "INACTIVO" %}selected{% endif %}>Inactivos</option>
 		</select>
 	</div>
+	{% if "usuarios.ver" in permisos %}
+	<div class="field narrow">
+		<label for="perfil">Rol</label>
+		<select id="perfil" name="perfil">
+			<option value="todos" {% if perfil_seleccionado == "todos" %}selected{% endif %}>Todos</option>
+			{% for p in perfiles %}<option value="{{ p.pk }}" {% if perfil_seleccionado == p.pk|stringformat:"s" %}selected{% endif %}>{{ p.nombre_perfil }}</option>{% endfor %}
+			<option value="sin" {% if perfil_seleccionado == "sin" %}selected{% endif %}>Sin rol</option>
+		</select>
+	</div>
+	{% endif %}
 	<button class="button" type="submit">Filtrar</button>
-	{% if busqueda or estado_seleccionado != "todos" %}<a class="button secondary" href="{% url 'empleados:panel' %}">Limpiar</a>{% endif %}
+	{% if busqueda or estado_seleccionado != "todos" or perfil_seleccionado != "todos" %}<a class="button secondary" href="{% url 'empleados:panel' %}">Limpiar</a>{% endif %}
 </form>
 
 {% if empleados %}
@@ -76,8 +86,8 @@
 {% else %}
 <section class="empty-state">
 	<p class="eyebrow">Sin resultados</p>
-	<h2>{% if busqueda %}No encontramos coincidencias{% else %}Aún no hay empleados{% endif %}</h2>
-	<p>{% if busqueda %}Prueba con otro nombre, DNI o dato de acceso.{% else %}Agrega el primer perfil para comenzar a organizar el equipo.{% endif %}</p>
+	<h2>{% if busqueda %}No encontramos empleados con esos datos{% else %}Todavía no hay empleados cargados{% endif %}</h2>
+	<p>{% if busqueda %}Probá con otro nombre o DNI.{% else %}Cargá el primero desde Alta.{% endif %}</p>
 	{% if not busqueda %}<a class="button" href="{% url 'empleados:alta' %}">Agregar empleado</a>{% endif %}
 </section>
 {% endif %}

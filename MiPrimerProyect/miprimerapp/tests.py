@@ -35,6 +35,30 @@ class PanelEmpleadosTests(TestCase):
 		self.assertContains(respuesta, activo.dni)
 		self.assertNotContains(respuesta, "87654321")
 
+	def test_panel_filtra_por_rol(self):
+		empleado = crear_usuario(30112233, "Gómez", "Juan", "Empleado")
+		admin = Perfil.objects.get(nombre_perfil="Administrador")
+		sin_rol = self.crear_empleado(nombre="Luis", apellido="Pérez", dni="87654321")
+
+		respuesta = self.client.get(reverse("empleados:panel"), {"perfil": admin.pk})
+		self.assertContains(respuesta, "20111222")
+		self.assertNotContains(respuesta, empleado.dni)
+		self.assertNotContains(respuesta, sin_rol.dni)
+
+		respuesta = self.client.get(reverse("empleados:panel"), {"perfil": "sin"})
+		self.assertContains(respuesta, sin_rol.dni)
+		self.assertNotContains(respuesta, empleado.dni)
+
+		respuesta = self.client.get(reverse("empleados:panel"), {"perfil": "xyz"})
+		self.assertContains(respuesta, empleado.dni)
+		self.assertContains(respuesta, sin_rol.dni)
+
+	def test_perfil_empleado_no_ve_filtro_de_rol(self):
+		crear_usuario(30112233, "Gómez", "Juan", "Empleado")
+		ingresar(self.client, "gomezj")
+		respuesta = self.client.get(reverse("empleados:panel"))
+		self.assertNotContains(respuesta, 'name="perfil"')
+
 	def test_panel_muestra_datos_de_acceso_sin_exponer_el_hash(self):
 		empleado = crear_usuario(30112233, "Gómez", "Juan", "Empleado")
 

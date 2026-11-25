@@ -7,6 +7,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import EmpleadoForm, EmpleadoModificarForm
 from .models import Empleado
+from usuarios.models import Perfil
 from usuarios.seguridad import generar_clave_temporal, permiso_requerido
 
 
@@ -15,6 +16,9 @@ def panel_empleados(request):
 	empleados = Empleado.objects.select_related("id_perfil").all()
 	busqueda = request.GET.get("q", "").strip()
 	estado = request.GET.get("estado", "todos")
+	puede_ver_perfiles = "usuarios.ver" in request.usuario.permisos()
+	perfiles = Perfil.objects.order_by("nombre_perfil") if puede_ver_perfiles else Perfil.objects.none()
+	perfil = request.GET.get("perfil", "todos") if puede_ver_perfiles else "todos"
 
 	if busqueda:
 		coincidencias = (
@@ -22,7 +26,7 @@ def panel_empleados(request):
 			| Q(apellido__icontains=busqueda)
 			| Q(dni__icontains=busqueda)
 		)
-		if "usuarios.ver" in request.usuario.permisos():
+		if puede_ver_perfiles:
 			coincidencias |= (
 				Q(correo__icontains=busqueda)
 				| Q(nombre_usuario__icontains=busqueda)
@@ -33,6 +37,12 @@ def panel_empleados(request):
 		empleados = empleados.filter(activo="SI" if estado == "ACTIVO" else "NO")
 	else:
 		estado = "todos"
+	if perfil == "sin":
+		empleados = empleados.filter(id_perfil__isnull=True)
+	elif perfil.isdigit() and perfiles.filter(pk=perfil).exists():
+		empleados = empleados.filter(id_perfil_id=int(perfil))
+	else:
+		perfil = "todos"
 
 	return render(
 		request,
@@ -41,6 +51,8 @@ def panel_empleados(request):
 			"empleados": empleados,
 			"busqueda": busqueda,
 			"estado_seleccionado": estado,
+			"perfiles": perfiles,
+			"perfil_seleccionado": perfil,
 			"total_empleados": Empleado.objects.count(),
 			"empleados_activos": Empleado.objects.filter(activo="SI").count(),
 			"empleados_inactivos": Empleado.objects.filter(activo="NO").count(),
@@ -70,7 +82,7 @@ def editar_empleado(request, empleado_id):
 	form = EmpleadoModificarForm(request.POST or None, instance=empleado)
 	if request.method == "POST" and form.is_valid():
 		form.save()
-		messages.success(request, f"Se guardaron los cambios de {empleado.nombre} {empleado.apellido}.")
+		messages.success(request, f"Guardaste los cambios de {empleado.nombre} {empleado.apellido}.")
 		return redirect("empleados:panel")
 	return render(
 		request,
@@ -139,13 +151,10 @@ def dar_de_baja_empleado(request, empleado_id):
 			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba dado de baja.")
 			return redirect(destino)
 		if empleado.pk in administradores and len(administradores) <= 1:
-			messages.error(
-				request,
-				"No se puede dar de baja al último administrador activo. Asigná otro administrador antes.",
-			)
+			messages.error(request, "Es el único administrador activo. Para darlo de baja, primero asigná otro.")
 			return redirect(destino)
 		empleado.dar_de_baja()
-	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue dado de baja.")
+	messages.success(request, f"Diste de baja a {empleado.nombre} {empleado.apellido}.")
 	return redirect(destino)
 
 
@@ -165,5 +174,5 @@ def reactivar_empleado(request, empleado_id):
 			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba activo.")
 			return redirect(destino)
 		empleado.reactivar()
-	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue reactivado.")
+	messages.success(request, f"Reactivaste a {empleado.nombre} {empleado.apellido}.")
 	return redirect(destino)
