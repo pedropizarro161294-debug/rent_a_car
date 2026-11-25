@@ -75,13 +75,56 @@ class RegistrarAlquilerTests(BaseAlquiler):
         self.assertContains(r, "Elegí al menos un vehículo")
         self.assertFalse(ContratoAlquiler.objects.exists())
 
-    def test_no_permite_vehiculo_alquilado(self):
+    def _alquilar(self, vehiculos, inicio, fin):
+        return servicios.registrar_alquiler(
+            cliente=self.cliente, vehiculos=vehiculos, fecha_inicio=inicio, fecha_fin=fin,
+            porcentaje_descuento=Decimal("0"), condiciones="", usuario=self.admin,
+        )
+
+    def test_no_permite_vehiculo_alquilado_en_fechas_superpuestas(self):
+        self._alquilar([self.v1], self.hoy + timedelta(days=2), self.hoy + timedelta(days=5))
         ingresar(self.client, self.admin.nombre_usuario)
-        self.v1.estado_operativo = "ALQUILADO"
+        r = self.client.post(reverse("alquileres:registrar"), self.datos())  # hoy a hoy+3: se superpone
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, "Ya está alquilado en esas fechas: AB123CD")
+        self.assertEqual(ContratoAlquiler.objects.count(), 1)
+        with self.assertRaises(servicios.ValidationError):
+            self._alquilar([self.v1], self.hoy + timedelta(days=5), self.hoy + timedelta(days=6))
+
+    def test_permite_alquilar_el_mismo_vehiculo_en_otras_fechas(self):
+        self._alquilar([self.v1], self.hoy, self.hoy + timedelta(days=2))
+        ingresar(self.client, self.admin.nombre_usuario)
+        r = self.client.get(reverse("alquileres:registrar"))
+        self.assertContains(r, "AB123CD")  # sigue apareciendo en la lista
+        inicio, fin = self.hoy + timedelta(days=30), self.hoy + timedelta(days=36)
+        r = self.client.post(reverse("alquileres:registrar"), self.datos(fecha_inicio=inicio.isoformat(), fecha_fin=fin.isoformat(), vehiculos=[self.v1.pk]))
+        self.assertEqual(ContratoAlquiler.objects.count(), 2)
+        self.assertEqual(r.status_code, 302)
+
+    def test_vehiculo_en_mantenimiento_no_se_alquila(self):
+        self.v1.estado_operativo = "EN_MANTENIMIENTO"
         self.v1.save()
+        ingresar(self.client, self.admin.nombre_usuario)
         r = self.client.post(reverse("alquileres:registrar"), self.datos())
         self.assertEqual(r.status_code, 200)
         self.assertFalse(ContratoAlquiler.objects.exists())
+
+    def test_finalizar_uno_no_libera_si_queda_otro_alquiler(self):
+        actual = self._alquilar([self.v1], self.hoy, self.hoy + timedelta(days=2))
+        self._alquilar([self.v1], self.hoy + timedelta(days=10), self.hoy + timedelta(days=12))
+        servicios.finalizar_alquiler(actual, usuario=self.admin)
+        self.v1.refresh_from_db()
+        self.assertEqual(self.v1.estado_operativo, "ALQUILADO")
+
+    def test_no_finaliza_antes_de_la_fecha_de_retiro(self):
+        futuro = self._alquilar([self.v1], self.hoy + timedelta(days=10), self.hoy + timedelta(days=12))
+        ingresar(self.client, self.admin.nombre_usuario)
+        r = self.client.get(reverse("alquileres:detalle", args=[futuro.pk]))
+        self.assertContains(r, "Se habilita desde la fecha de retiro")
+        r = self.client.post(reverse("alquileres:finalizar", args=[futuro.pk]), follow=True)
+        self.assertContains(r, "No se puede finalizar antes de la fecha de retiro")
+        futuro.refresh_from_db()
+        self.assertEqual(futuro.estado, "CONFIRMADO")
 
     def test_transaccion_revierte_todo_si_falla(self):
         with mock.patch.object(DetalleContrato.objects, "create", side_effect=RuntimeError("falla")):
