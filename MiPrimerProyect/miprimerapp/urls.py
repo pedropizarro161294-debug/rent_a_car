@@ -10,5 +10,6 @@ urlpatterns = [
     path("empleados/alta/", views.alta_empleado, name="alta"),
     path("empleados/<int:empleado_id>/editar/", views.editar_empleado, name="editar"),
     path("empleados/bajas/", views.baja_empleados, name="bajas"),
-    path("empleados/<int:empleado_id>/estado/", views.cambiar_estado_empleado, name="cambiar_estado"),
+    path("empleados/<int:empleado_id>/baja/", views.dar_de_baja_empleado, name="baja"),
+    path("empleados/<int:empleado_id>/reactivar/", views.reactivar_empleado, name="reactivar"),
 ]

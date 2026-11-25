@@ -11,7 +11,6 @@ class EmpleadoForm(forms.ModelForm):
             "apellido",
             "dni",
             "fecha_alta",
-            "activo",
             "correo",
             "id_perfil",
         ]
@@ -20,7 +19,6 @@ class EmpleadoForm(forms.ModelForm):
             "apellido": "Apellido",
             "dni": "DNI",
             "fecha_alta": "Fecha de alta",
-            "activo": "Activo",
             "correo": "Correo electrónico",
             "id_perfil": "Perfil de acceso",
         }

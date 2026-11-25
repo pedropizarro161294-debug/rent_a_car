@@ -121,6 +121,11 @@ class Empleado(models.Model):
         self.fecha_baja = timezone.now()
         self.save(update_fields=["activo", "fecha_baja", "fecha_ultima_modificacion"])
 
+    def reactivar(self):
+        self.activo = "SI"
+        self.fecha_baja = None
+        self.save(update_fields=["activo", "fecha_baja", "fecha_ultima_modificacion"])
+
     def permisos(self):
         if not self.id_perfil_id:
             return set()
