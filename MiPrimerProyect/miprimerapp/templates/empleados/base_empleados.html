@@ -7,7 +7,7 @@
     <title>{% block title %}Equipo{% endblock %} | Rent a Car</title>
     <link rel="stylesheet" href="{% static 'css/empleados.css' %}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header class="topbar">
         <div class="topbar-inner">
             <a class="brand" href="{% url 'empleados:panel' %}"><span class="brand-mark">RN</span><span>Rent a Car <span class="brand-caption">Alquiler de autos y camionetas 4x4</span></span></a>

@@ -732,3 +732,360 @@ nav {
 nav a {
     font-size: 13.5px;
 }
+
+/* Refinamiento visual global */
+:root {
+    --ink: #172727;
+    --muted: #65736f;
+    --paper: #f3f5f2;
+    --surface: #ffffff;
+    --line: #dde4df;
+    --green: #1b755b;
+    --green-dark: #155c48;
+    --lime: #dbe96f;
+    --coral: #b95b48;
+    --shadow: 0 10px 28px rgba(31, 54, 49, .08);
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(219, 233, 111, .08), transparent 28rem),
+        var(--paper);
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+    box-shadow: 0 4px 18px rgba(16, 38, 34, .12);
+}
+
+.topbar-inner {
+    min-height: 68px;
+}
+
+.brand {
+    font-size: 17px;
+}
+
+.brand-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px rgba(23, 39, 39, .08);
+}
+
+.brand-caption {
+    margin-top: 1px;
+    letter-spacing: 0;
+    font-weight: 500;
+}
+
+nav {
+    align-items: center;
+    max-width: 900px;
+    flex-wrap: nowrap;
+    gap: 3px;
+}
+
+nav a {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    white-space: nowrap;
+    font-size: 13px;
+    letter-spacing: .01em;
+    transition: background-color .16s ease, color .16s ease, border-color .16s ease;
+}
+
+nav a:hover,
+nav a[aria-current="page"] {
+    border-color: rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .11);
+}
+
+nav a[href*="logout"] {
+    margin-left: 6px;
+    border-color: rgba(255, 255, 255, .1);
+    color: #fff;
+}
+
+main {
+    padding: 34px 0 48px;
+}
+
+.page-heading {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+}
+
+.page-heading h1 {
+    font-weight: 760;
+}
+
+.eyebrow {
+    color: #5d756f;
+}
+
+.button {
+    min-height: 40px;
+    border-radius: 7px;
+    box-shadow: 0 4px 10px rgba(27, 117, 91, .12);
+    transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
+}
+
+.button:hover {
+    transform: translateY(-1px);
+}
+
+.button.secondary {
+    box-shadow: none;
+}
+
+.button.danger {
+    box-shadow: none;
+}
+
+.stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.stat,
+.toolbar,
+.form-panel,
+.table-wrap,
+.empty-state,
+.totales {
+    border-radius: 9px;
+    box-shadow: 0 8px 24px rgba(31, 54, 49, .065);
+}
+
+.stat {
+    border-top: 3px solid rgba(27, 117, 91, .45);
+}
+
+.stat-label {
+    font-weight: 650;
+}
+
+.toolbar {
+    background: rgba(255, 255, 255, .92);
+}
+
+input,
+select,
+textarea {
+    border-radius: 7px;
+    border-color: #ccd7d0;
+    background: #fff;
+    transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #94a09c;
+}
+
+.table-wrap {
+    border: 1px solid var(--line);
+}
+
+.table-count {
+    background: #fbfcfb;
+    font-weight: 600;
+}
+
+th {
+    background: #f7f9f6;
+    color: #687772;
+    font-size: 10.5px;
+}
+
+tbody tr {
+    transition: background-color .12s ease;
+}
+
+tbody tr:hover {
+    background: #f8fbf8;
+}
+
+.badge {
+    border: 1px solid rgba(36, 99, 68, .08);
+}
+
+.form-panel {
+    border-radius: 10px;
+}
+
+.form-panel:not(.wide) {
+    max-width: 760px;
+}
+
+.form-actions {
+    align-items: center;
+}
+
+.messages {
+    position: relative;
+}
+
+.messages li,
+.notice,
+.anulacion {
+    border-radius: 7px;
+}
+
+.empty-state {
+    background:
+        linear-gradient(180deg, rgba(247, 249, 246, .72), #fff);
+}
+
+.totales {
+    border-radius: 10px;
+}
+
+.vehiculos-lista label {
+    border-radius: 8px;
+}
+
+.vehiculos-lista label:hover {
+    border-color: #9abdaf;
+    background: #f8fbf8;
+}
+
+.ficha {
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fbfcfb;
+}
+
+@media (min-width: 721px) {
+    nav {
+        max-width: 900px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 12px 0 8px;
+        gap: 6px;
+    }
+
+    nav {
+        width: 100%;
+        max-width: none;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+}
+
+@media (max-width: 900px) {
+    .topbar-inner {
+        padding: 10px 0;
+    }
+
+    nav {
+        max-width: none;
+        padding-bottom: 2px;
+    }
+}
+
+@media (max-width: 720px) {
+    .topbar {
+        position: relative;
+    }
+
+    main {
+        padding: 24px 0 36px;
+    }
+
+    .page-heading {
+        padding-bottom: 14px;
+    }
+
+    .brand-caption {
+        display: none;
+    }
+
+    nav {
+        flex-wrap: nowrap;
+        scrollbar-width: thin;
+        padding: 4px 0 8px;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-color: rgba(255, 255, 255, .24) transparent;
+    }
+
+    nav a {
+        min-height: 36px;
+        flex: 0 0 auto;
+    }
+
+    nav a[href*="logout"] {
+        margin-left: 2px;
+    }
+
+    .stats {
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .stat {
+        min-height: 92px;
+    }
+
+    .table-wrap {
+        border-radius: 8px;
+    }
+
+    .form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .button {
+        width: 100%;
+    }
+}
+
+.login-panel {
+    width: 100%;
+    max-width: 520px !important;
+    margin: 18px auto 0;
+    padding: 28px;
+}
+
+.login-panel .form-grid {
+    grid-template-columns: 1fr;
+}
+
+.login-panel .form-actions {
+    justify-content: stretch;
+}
+
+.login-panel .form-actions .button {
+    width: 100%;
+}
+
+.login-page main {
+    max-width: 760px;
+}
+
+.login-page .page-heading {
+    justify-content: center;
+    text-align: center;
+    border-bottom: 0;
+    margin-bottom: 0;
+}

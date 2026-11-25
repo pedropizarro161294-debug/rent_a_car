@@ -1,12 +1,13 @@
 {% extends "empleados/base_empleados.html" %}
 {% block title %}Ingresar{% endblock %}
+{% block body_class %}login-page{% endblock %}
 {% block content %}
 <section class="page-heading"><div>
   <p class="eyebrow">Seguridad / Acceso</p>
   <h1>Ingreso al sistema</h1>
   <p class="muted">Ingresá con tu usuario (apellido + inicial del nombre) y tu clave.</p>
 </div></section>
-<section class="form-panel">
+<section class="form-panel login-panel">
   <form method="post" novalidate>
     {% csrf_token %}
     <div class="form-grid">
