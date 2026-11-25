@@ -47,7 +47,6 @@ class CuentasEmpleadoTests(TestCase):
                 "nombre": "Juan",
                 "correo": "jg@mail.com",
                 "fecha_alta": "2025-01-15",
-                "activo": "SI",
                 "id_perfil": Perfil.objects.get(nombre_perfil="Empleado").pk,
             },
         )
@@ -77,7 +76,7 @@ class CuentasEmpleadoTests(TestCase):
 
     def test_baja_desactiva_la_cuenta(self):
         empleado = crear_usuario(30000002, "Díaz", "Pedro", "Empleado")
-        self.client.post(reverse("empleados:cambiar_estado", args=[empleado.id_empleado]))
+        self.client.post(reverse("empleados:baja", args=[empleado.id_empleado]))
         empleado.refresh_from_db()
         self.assertEqual(empleado.activo, "NO")
         self.assertIsNotNone(empleado.fecha_baja)

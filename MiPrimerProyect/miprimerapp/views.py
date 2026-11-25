@@ -1,7 +1,9 @@
 from django.contrib import messages
 from django.db.models import Q
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import EmpleadoForm, EmpleadoModificarForm
 from .models import Empleado
@@ -83,19 +85,85 @@ def baja_empleados(request):
 	return render(request, "empleados/baja_empleados.html", {"empleados": empleados})
 
 
-@require_POST
-@permiso_requerido("empleados.gestionar")
-def cambiar_estado_empleado(request, empleado_id):
-	empleado = get_object_or_404(Empleado, pk=empleado_id)
-	if empleado.dni == str(request.usuario.dni) and empleado.activo == "SI":
+PERMISO_GESTION = "empleados.gestionar"
+
+
+def _destino_seguro(request):
+	"""Devuelve el `next` del formulario solo si apunta a este mismo sitio."""
+	destino = request.POST.get("next") or request.GET.get("next")
+	if destino and url_has_allowed_host_and_scheme(
+		destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+	):
+		return destino
+	return reverse("empleados:panel")
+
+
+def _es_administrador(empleado):
+	return empleado.activo == "SI" and empleado.tiene_permiso(PERMISO_GESTION)
+
+
+def _administradores_activos():
+	return Empleado.objects.filter(
+		activo="SI",
+		id_perfil__perfil_permisos__id_permiso__nombre_permiso=PERMISO_GESTION,
+	)
+
+
+def _confirmar(request, empleado, accion):
+	return render(
+		request,
+		"empleados/confirmar_estado.html",
+		{"empleado": empleado, "accion": accion, "next": _destino_seguro(request)},
+	)
+
+
+@permiso_requerido(PERMISO_GESTION)
+def dar_de_baja_empleado(request, empleado_id):
+	empleado = get_object_or_404(Empleado.objects.select_related("id_perfil"), pk=empleado_id)
+	destino = _destino_seguro(request)
+	if empleado.activo != "SI":
+		messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba dado de baja.")
+		return redirect(destino)
+	if empleado.dni == str(request.usuario.dni):
 		messages.error(request, "No podés darte de baja a vos mismo.")
-		return redirect(request.POST.get("next") or "empleados:panel")
-	if empleado.activo == "SI":
+		return redirect(destino)
+	if request.method != "POST":
+		return _confirmar(request, empleado, "baja")
+
+	with transaction.atomic():
+		# Bloqueamos las filas de los administradores activos para que dos bajas
+		# simultáneas no dejen el sistema sin nadie que pueda gestionar empleados.
+		administradores = list(_administradores_activos().select_for_update().values_list("pk", flat=True))
+		empleado = Empleado.objects.select_for_update().get(pk=empleado.pk)
+		if empleado.activo != "SI":
+			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba dado de baja.")
+			return redirect(destino)
+		if empleado.pk in administradores and len(administradores) <= 1:
+			messages.error(
+				request,
+				"No se puede dar de baja al último administrador activo. Asigná otro administrador antes.",
+			)
+			return redirect(destino)
 		empleado.dar_de_baja()
-	else:
-		empleado.activo = "SI"
-		empleado.fecha_baja = None
-		empleado.save(update_fields=["activo", "fecha_baja", "fecha_ultima_modificacion"])
-	accion = "dado de baja" if empleado.activo == "NO" else "reactivado"
-	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue {accion}.")
-	return redirect(request.POST.get("next") or "empleados:panel")
+	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue dado de baja.")
+	return redirect(destino)
+
+
+@permiso_requerido(PERMISO_GESTION)
+def reactivar_empleado(request, empleado_id):
+	empleado = get_object_or_404(Empleado.objects.select_related("id_perfil"), pk=empleado_id)
+	destino = _destino_seguro(request)
+	if empleado.activo == "SI":
+		messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba activo.")
+		return redirect(destino)
+	if request.method != "POST":
+		return _confirmar(request, empleado, "reactivar")
+
+	with transaction.atomic():
+		empleado = Empleado.objects.select_for_update().get(pk=empleado.pk)
+		if empleado.activo == "SI":
+			messages.info(request, f"{empleado.nombre} {empleado.apellido} ya estaba activo.")
+			return redirect(destino)
+		empleado.reactivar()
+	messages.success(request, f"{empleado.nombre} {empleado.apellido} fue reactivado.")
+	return redirect(destino)

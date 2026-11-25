@@ -64,11 +64,7 @@
 					<div class="actions">
 						<a class="button secondary" href="{% url 'empleados:editar' empleado.id_empleado %}">Editar</a>
 						{% if empleado.nombre_usuario and "usuarios.restablecer_clave" in permisos %}<a class="button secondary" href="{% url 'restablecer_clave' %}?dni={{ empleado.dni }}">Restablecer clave</a>{% endif %}
-						<form method="post" action="{% url 'empleados:cambiar_estado' empleado.id_empleado %}">
-							{% csrf_token %}
-							<input type="hidden" name="next" value="{% url 'empleados:panel' %}">
-							<button class="button {% if empleado.activo == 'SI' %}danger{% else %}secondary{% endif %}" type="submit">{% if empleado.activo == 'SI' %}Dar de baja{% else %}Reactivar{% endif %}</button>
-						</form>
+						{% if empleado.activo == 'SI' %}<a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}">Dar de baja</a>{% else %}<a class="button secondary" href="{% url 'empleados:reactivar' empleado.id_empleado %}">Reactivar</a>{% endif %}
 					</div>
 					{% endif %}
 				</td>

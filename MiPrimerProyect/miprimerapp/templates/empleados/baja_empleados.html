@@ -24,11 +24,7 @@
 				<td>{{ empleado.id_perfil|default:"-" }}</td>
 				<td>{{ empleado.fecha_alta|date:"d/m/Y" }}</td>
 				<td>
-					<form class="actions" method="post" action="{% url 'empleados:cambiar_estado' empleado.id_empleado %}">
-						{% csrf_token %}
-						<input type="hidden" name="next" value="{% url 'empleados:bajas' %}">
-						<button class="button danger" type="submit">Dar de baja</button>
-					</form>
+					<div class="actions"><a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}?next={% url 'empleados:bajas' %}">Dar de baja</a></div>
 				</td>
 			</tr>
 			{% endfor %}

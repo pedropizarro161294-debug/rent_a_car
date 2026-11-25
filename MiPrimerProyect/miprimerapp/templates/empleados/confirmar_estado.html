@@ -1,0 +1,30 @@
+{% extends "empleados/base_empleados.html" %}
+
+{% block title %}{% if accion == "baja" %}Confirmar baja{% else %}Confirmar reactivación{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+	<div>
+		<p class="eyebrow">Personas / Estado laboral</p>
+		<h1>{% if accion == "baja" %}¿Dar de baja a {{ empleado.nombre }} {{ empleado.apellido }}?{% else %}¿Reactivar a {{ empleado.nombre }} {{ empleado.apellido }}?{% endif %}</h1>
+		<p class="muted">DNI {{ empleado.dni }}{% if empleado.id_perfil %} · Perfil {{ empleado.id_perfil }}{% endif %}{% if empleado.nombre_usuario %} · Usuario {{ empleado.nombre_usuario }}{% endif %}</p>
+	</div>
+</section>
+<div class="notice">
+	{% if accion == "baja" %}
+	El empleado no podrá volver a ingresar al sistema y se cerrará su sesión si la tiene abierta. La baja es lógica: sus alquileres, reservas y pagos se conservan y se puede reactivar más adelante.
+	{% else %}
+	El empleado volverá a figurar como activo y podrá ingresar al sistema con su usuario.
+	{% endif %}
+</div>
+<section class="form-panel">
+	<form method="post">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{{ next }}">
+		<div class="form-actions">
+			<a class="button secondary" href="{{ next }}">Cancelar</a>
+			<button class="button {% if accion == 'baja' %}danger{% endif %}" type="submit">{% if accion == "baja" %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}</button>
+		</div>
+	</form>
+</section>
+{% endblock %}
