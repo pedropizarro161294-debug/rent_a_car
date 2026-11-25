@@ -3,26 +3,18 @@
 {% block title %}{% if accion == "baja" %}Confirmar baja{% else %}Confirmar reactivación{% endif %}{% endblock %}
 
 {% block content %}
-<section class="confirm-simple">
-	<p class="eyebrow">Empleados</p>
+<section class="confirm-dialog {% if accion == 'baja' %}is-danger{% endif %}">
+	<span class="confirm-icon" aria-hidden="true">{% if accion == "baja" %}!{% else %}&#8635;{% endif %}</span>
 	<h1>{% if accion == "baja" %}¿Dar de baja a {{ empleado.nombre }} {{ empleado.apellido }}?{% else %}¿Reactivar a {{ empleado.nombre }} {{ empleado.apellido }}?{% endif %}</h1>
-
-	<dl class="confirm-list">
-		<dt>DNI</dt><dd>{{ empleado.dni }}</dd>
-		<dt>Perfil</dt><dd>{{ empleado.id_perfil|default:"Sin rol" }}</dd>
-		<dt>Usuario</dt><dd>{{ empleado.nombre_usuario|default:"-" }}</dd>
-		{% if empleado.fecha_baja %}<dt>Dado de baja el</dt><dd>{{ empleado.fecha_baja|date:"d/m/Y" }}</dd>{% endif %}
-	</dl>
-
-	<p class="muted">
+	<p class="confirm-meta">DNI {{ empleado.dni }} · {{ empleado.id_perfil|default:"Sin rol" }}{% if empleado.nombre_usuario %} · {{ empleado.nombre_usuario }}{% endif %}</p>
+	<p class="confirm-text">
 		{% if accion == "baja" %}No va a poder entrar al sistema. Sus alquileres y pagos quedan guardados y lo podés reactivar cuando quieras.{% else %}Va a poder entrar de nuevo con su usuario y su clave de siempre.{% endif %}
 	</p>
-
 	<form method="post" class="confirm-buttons">
 		{% csrf_token %}
 		<input type="hidden" name="next" value="{{ next }}">
-		<button class="button {% if accion == 'baja' %}danger solid{% endif %}" type="submit">{% if accion == "baja" %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}</button>
 		<a class="button secondary" href="{{ next }}">Cancelar</a>
+		<button class="button {% if accion == 'baja' %}danger solid{% endif %}" type="submit">{% if accion == "baja" %}Sí, dar de baja{% else %}Sí, reactivar{% endif %}</button>
 	</form>
 </section>
 {% endblock %}
