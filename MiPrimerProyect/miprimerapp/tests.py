@@ -170,6 +170,16 @@ class PanelEmpleadosTests(TestCase):
 		yo.refresh_from_db()
 		self.assertEqual(yo.activo, "SI")
 
+	def test_admin_no_ve_boton_de_baja_en_su_propia_fila(self):
+		yo = Empleado.objects.get(nombre_usuario="admint")
+		otro = self.crear_empleado()
+		url_propia = reverse("empleados:baja", args=[yo.id_empleado])
+		url_otro = reverse("empleados:baja", args=[otro.id_empleado])
+		for pantalla in ("empleados:panel", "empleados:bajas"):
+			respuesta = self.client.get(reverse(pantalla))
+			self.assertNotContains(respuesta, url_propia)
+			self.assertContains(respuesta, url_otro)
+
 	def test_next_externo_se_ignora(self):
 		empleado = self.crear_empleado()
 		respuesta = self.client.post(

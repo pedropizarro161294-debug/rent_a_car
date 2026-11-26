@@ -74,7 +74,7 @@
 					<div class="actions">
 						<a class="button secondary" href="{% url 'empleados:editar' empleado.id_empleado %}">Editar</a>
 						{% if empleado.nombre_usuario and "usuarios.restablecer_clave" in permisos %}<a class="button secondary" href="{% url 'restablecer_clave' %}?dni={{ empleado.dni }}">Restablecer clave</a>{% endif %}
-						{% if empleado.activo == 'SI' %}<a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}">Dar de baja</a>{% else %}<a class="button secondary" href="{% url 'empleados:reactivar' empleado.id_empleado %}">Reactivar</a>{% endif %}
+						{% if empleado.pk == usuario_logueado.pk %}{% elif empleado.activo == 'SI' %}<a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}">Dar de baja</a>{% else %}<a class="button secondary" href="{% url 'empleados:reactivar' empleado.id_empleado %}">Reactivar</a>{% endif %}
 					</div>
 					{% endif %}
 				</td>
