@@ -24,7 +24,7 @@
 				<td>{{ empleado.id_perfil|default:"-" }}</td>
 				<td>{{ empleado.fecha_alta|date:"d/m/Y" }}</td>
 				<td>
-					<div class="actions"><a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}?next={% url 'empleados:bajas' %}">Dar de baja</a></div>
+					<div class="actions">{% if empleado.pk == usuario_logueado.pk %}<span class="muted">Tu usuario</span>{% else %}<a class="button danger" href="{% url 'empleados:baja' empleado.id_empleado %}?next={% url 'empleados:bajas' %}">Dar de baja</a>{% endif %}</div>
 				</td>
 			</tr>
 			{% endfor %}
